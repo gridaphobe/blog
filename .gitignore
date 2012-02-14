@@ -1,0 +1,7 @@
+Vagrantfile
+.vagrant
+blog.tgz
+cabal-dev
+dist
+log/*.log
+.DS_Store
