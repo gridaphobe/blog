@@ -208,6 +208,7 @@ layout title body = H.docTypeHtml $ do
                         H.span ! A.class_ "divider" $ "|"
                     H.li $ do
                         H.a ! A.href "/publications" $ "Publications"
+                        H.span ! A.class_ "divider" $ "|"
                     H.li $ do
                         H.a ! A.href "/cv" $ "Resumé"
             H.section body

@@ -31,7 +31,7 @@ feed ps = feed_ ! customAttribute "xmlns" "http://www.w3.org/2005/Atom" $ do
 entry :: Post -> Html
 entry p = entry_ $ do
     title_ $ toHtml $ title p
-    link_ ! href ("http://www.eseidel.org/" `mappend` (toValue $ slug p))
+    link_ ! href ("http://www.eseidel.org/posts/" `mappend` (toValue $ slug p))
     updated_ $ toHtml $ formatTime defaultTimeLocale "%FT%X%z" $ date p
     id_  $ toHtml $ slug p
     content_ ! customAttribute "type" "html" $ toHtml $ L.unpack $ renderHtml $ content p
