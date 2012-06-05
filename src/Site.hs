@@ -33,8 +33,10 @@ import qualified Text.Blaze.Html5            as H
 import qualified Text.Blaze.Html5.Attributes as A
 import           Text.Blaze.Renderer.Text
 
+
 import           Application
 import           Post
+import qualified Feed as F
 
 writeHtml = writeLazyText . renderHtml
 
@@ -47,26 +49,37 @@ writeHtml = writeLazyText . renderHtml
 index :: Handler App App ()
 index = do
     posts <- gets _posts
+    modifyResponse $ addHeader "Content-Type" "text/html; charset=utf-8"
     ifTop $ writeHtml $ layout "Eric Seidel" $ do
-        H.img ! A.class_ "pull-right" ! A.title "Eric Seidel" ! A.src "/img/eric.jpg"
+        H.img ! A.class_ "pull-right" ! A.title "Eric Seidel"
+              ! A.src "/img/eric.jpg"
         H.h1 "Eric Seidel"
         H.p $ mconcat
             [ "I'm Eric Seidel. I am finishing up my BS in Computer Science, "
-            , "after that who knows. Here you'll find a collection of thoughts, "
-            , "a list of current and past projects, and a list of publications."
+            , "and will be starting my PhD in the fall. Here you'll find a "
+            , "collection of thoughts, a list of current and past projects, "
+            , "and a list of publications."
             ]
         H.p $ do
             "If you want to get in touch, you can reach me at "
-            H.a ! A.href "emailto:gridaphobe@gmail.com" $ "gridaphobe@gmail.com"
+            H.a ! A.href "mailto:gridaphobe@gmail.com" $ "gridaphobe@gmail.com"
             " or "
             H.a ! A.href "http://twitter.com/gridaphobe" $ "@gridaphobe"
             " on Twitter."
         H.h3 "Recent Posts"
         renderPostLinks $ take 5 $ reverse $ sort $ M.elems posts
 
+feed :: Handler App App ()
+feed = do
+    posts <- gets _posts
+    modifyResponse $ addHeader "Content-Type" "application/atom+xml; charset=utf-8"
+    writeLazyText $ "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+    writeHtml $ F.feed $ reverse $ sort $ M.elems posts
+
 archive :: Handler App App ()
 archive = do
     posts <- gets _posts
+    modifyResponse $ addHeader "Content-Type" "text/html; charset=utf-8"
     writeHtml $ layout "Eric Seidel" $ do
         H.h1 "All Posts"
         renderPostLinks $ reverse $ sort $ M.elems posts
@@ -95,6 +108,7 @@ renderPostLinks posts = do
 -- | Renders a single post
 post :: Handler App App ()
 post = do
+    modifyResponse $ addHeader "Content-Type" "text/html; charset=utf-8"
     slug <- decodedParam "slug"
     posts <- gets _posts
     case M.lookup (B.unpack slug) posts of
@@ -105,6 +119,7 @@ post = do
 
 publications :: Handler App App ()
 publications = do
+    modifyResponse $ addHeader "Content-Type" "text/html; charset=utf-8"
     writeHtml $ layout "Eric Seidel" $ do
         H.h1 "Publications"
         H.h3 "Papers"
@@ -156,6 +171,7 @@ publications = do
 notFound :: Handler App App ()
 notFound = do
     modifyResponse $ setResponseCode 404
+    modifyResponse $ addHeader "Content-Type" "text/html; charset=utf-8"
     writeHtml $ layout "Eric Seidel" $ do
         H.h1 "Not Found"
         H.p "Sorry, couldn't find that... Try again?"
@@ -200,40 +216,45 @@ layout title body = H.docTypeHtml $ do
 ------------------------------------------------------------------------------
 -- | Extra styling
 style :: Handler App App ()
-style = writeLazyText $ C.renderCSS $ C.runCSS $ do
-    C.rule ".container" $ do
-        C.width "750px"
-        C.paddingTop "20px"
-    C.rule "a code.url" $ do
-        C.color "#08C"
-    C.rule "h1, h2, h3, h4, h5, h6" $ do
-        C.fontFamily "Ubuntu, sans-serif"
-    C.rule "pre, code" $ do
-        C.fontFamily "Inconsolata, monospace"
-        C.color "black"
-        C.borderStyle "none"
-    C.rule "nav ul li a" $ do
-        C.fontFamily "Ubuntu, sans-serif"
-        C.color "black"
-    C.rule "footer" $ do
-        C.marginTop "5px"
-        C.borderTop "1px solid #E5E5E5"
-        C.rule "p" $ do
-            C.textAlign "center"
-            C.fontSize "80%"
-    C.rule "section h1" $ do
-        C.marginBottom "15px"
-        C.borderBottom "1px solid #E5E5E5"
+style = do
+    modifyResponse $ addHeader "Content-Type" "text/css; charset=utf-8"
+    writeLazyText $ C.renderCSS $ C.runCSS $ do
+        C.rule ".container" $ do
+            C.width "750px"
+            C.paddingTop "20px"
+        C.rule "a code.url" $ do
+            C.color "#08C"
+        C.rule "h1, h2, h3, h4, h5, h6" $ do
+            C.fontFamily "Ubuntu, sans-serif"
+        C.rule "pre, code" $ do
+            C.fontFamily "Inconsolata, monospace"
+            C.color "black"
+            C.borderStyle "none"
+        C.rule "nav ul li a" $ do
+            C.fontFamily "Ubuntu, sans-serif"
+            C.color "black"
+        C.rule "footer" $ do
+            C.marginTop "5px"
+            C.borderTop "1px solid #E5E5E5"
+            C.rule "p" $ do
+                C.textAlign "center"
+                C.fontSize "80%"
+        C.rule "section h1" $ do
+            C.marginBottom "15px"
+            C.borderBottom "1px solid #E5E5E5"
 
 ------------------------------------------------------------------------------
 -- | The application's routes.
 routes :: [(ByteString, Handler App App ())]
 routes = [ ("/",              index)
+         , ("/atom.xml",      feed)
          , ("/css/style.css", style)
          , ("/posts/:slug",   post)
          , ("/posts",         archive)
          , ("/projects",      redirect "http://github.com/gridaphobe")
          , ("/publications",  publications)
+         , ("/resume",        redirect "http://fluidcv.com/gridaphobe")
+         , ("/cv",            redirect "http://fluidcv.com/gridaphobe")
          , ("", serveDirectory "resources/static")
          , ("", notFound)
          ]
