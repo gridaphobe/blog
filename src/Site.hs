@@ -188,6 +188,8 @@ layout title body = H.docTypeHtml $ do
             A.content "eric seidel,eric,seidel,eseidel,gridaphobe"
         H.meta ! A.name "icon" ! A.href "/favicon.ico" ! A.type_ "image/x-icon"
         H.title $ H.toHtml title
+        H.link ! A.href "/atom.xml" ! A.type_ "application/atom+xml" ! A.rel "alternate"
+            ! A.title "Eric Seidel"
         css "http://fonts.googleapis.com/css?family=Ubuntu|Vollkorn|Inconsolata"
         css "/css/bootstrap.min.css"
         css "/css/style.css"
@@ -206,6 +208,8 @@ layout title body = H.docTypeHtml $ do
                         H.span ! A.class_ "divider" $ "|"
                     H.li $ do
                         H.a ! A.href "/publications" $ "Publications"
+                    H.li $ do
+                        H.a ! A.href "/cv" $ "Resumé"
             H.section body
             H.footer ! A.class_ "footer" $ do
                 H.p $ do
