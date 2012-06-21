@@ -21,7 +21,7 @@ feed ps = feed_ ! customAttribute "xmlns" "http://www.w3.org/2005/Atom" $ do
     link_ ! rel "self" ! href "http://www.eseidel.org/atom.xml"
     link_ ! rel "self" ! href "http://eseidel.org/atom.xml"
     link_ ! href "http://www.eseidel.org/"
-    updated_ $ toHtml $ formatTime defaultTimeLocale "%FT%X%z" $ date $ head ps
+    updated_ $ toHtml $ formatTime defaultTimeLocale "%FT%XZ" $ date $ head ps
     id_ $ "http://www.eseidel.org/"
     author_ $ do
         name_ $ "Eric Seidel"
