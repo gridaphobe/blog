@@ -27,11 +27,14 @@ import qualified Language.CSS                as C
 import           Snap.Core
 import           Snap.Snaplet
 import           Snap.Util.FileServe
+import           System.Directory
+import           System.FilePath
 import           System.Locale
 import           Text.Blaze                  (Html, (!))
 import qualified Text.Blaze.Html5            as H
 import qualified Text.Blaze.Html5.Attributes as A
 import           Text.Blaze.Renderer.Text
+import           Text.Pandoc.Highlighting
 
 
 import           Application
@@ -77,7 +80,7 @@ feed = do
     writeHtml $ F.feed $ reverse $ sort $ M.elems posts
 
 archive :: Handler App App ()
-archive = do
+archive = ifTop $ do
     posts <- gets _posts
     modifyResponse $ addHeader "Content-Type" "text/html; charset=utf-8"
     writeHtml $ layout "Eric Seidel" $ do
@@ -108,12 +111,15 @@ renderPostLinks posts = do
 -- | Renders a single post
 post :: Handler App App ()
 post = do
-    modifyResponse $ addHeader "Content-Type" "text/html; charset=utf-8"
     slug <- decodedParam "slug"
+    let slugS = B.unpack slug
     posts <- gets _posts
-    case M.lookup (B.unpack slug) posts of
-        Just post -> writeHtml $ layout (title post) (renderPost post)
-        Nothing -> pass
+    if takeExtension slugS == ".lhs"
+        then serveFile $ "resources/posts/" ++ slugS
+        else do modifyResponse $ addHeader "Content-Type" "text/html; charset=utf-8"
+                case M.lookup slugS posts of
+                    Just post -> writeHtml $ layout (title post) (renderPost post)
+                    Nothing -> pass
   where
     decodedParam p = fromMaybe "" <$> getParam p
 
@@ -193,6 +199,7 @@ layout title body = H.docTypeHtml $ do
         css "http://fonts.googleapis.com/css?family=Ubuntu|Vollkorn|Inconsolata"
         css "/css/bootstrap.min.css"
         css "/css/style.css"
+        css "/css/code.css"
     H.body $ do
         H.div ! A.class_ "container" $ do
             H.nav $ do
@@ -248,12 +255,18 @@ style = do
             C.marginBottom "15px"
             C.borderBottom "1px solid #E5E5E5"
 
+code :: Handler App App ()
+code = do
+    modifyResponse $ addHeader "Content-Type" "text/css; charset=utf-8"
+    writeText $ T.pack $ styleToCss pygments
+
 ------------------------------------------------------------------------------
 -- | The application's routes.
 routes :: [(ByteString, Handler App App ())]
 routes = [ ("/",              index)
          , ("/atom.xml",      feed)
          , ("/css/style.css", style)
+         , ("/css/code.css",  code)
          , ("/posts/:slug",   post)
          , ("/posts",         archive)
          , ("/projects",      redirect "http://github.com/gridaphobe")
