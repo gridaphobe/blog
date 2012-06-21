@@ -34,7 +34,7 @@ entry p = entry_ $ do
     title_ $ toHtml $ title p
     link_ ! href ("http://www.eseidel.org/posts/" `mappend` (toValue $ slug p))
     updated_ $ toHtml $ formatTime defaultTimeLocale "%FT%XZ" $ date p
-    id_  $ toHtml $ "http://www.eseidel.org/posts" `mappend` slug p
+    id_  $ toHtml $ "http://www.eseidel.org/posts/" `mappend` slug p
     content_ ! customAttribute "type" "html" $ toHtml $ L.unpack $ renderHtml $ content p
 
 feed_ = Parent "feed" "<feed" "</feed>"
