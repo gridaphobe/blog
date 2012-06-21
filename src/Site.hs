@@ -196,7 +196,8 @@ layout title body = H.docTypeHtml $ do
             A.content "eric seidel,eric,seidel,eseidel,gridaphobe"
         H.meta ! A.name "icon" ! A.href "/favicon.ico" ! A.type_ "image/x-icon"
         H.title $ H.toHtml title
-        H.link ! A.href "/atom.xml" ! A.type_ "application/atom+xml" ! A.rel "alternate"
+        H.link ! A.href "http://feeds.feedburner.com/gridaphobe"
+            ! A.type_ "application/rss+xml" ! A.rel "alternate"
             ! A.title "Eric Seidel"
         css "http://fonts.googleapis.com/css?family=Ubuntu|Vollkorn|Inconsolata"
         css "/css/bootstrap.min.css"
