@@ -149,10 +149,10 @@ shorter than the Java code, but let's face it, they both work just
 fine. So where's the difference?
 
 You might not want to use the Java code because it boxes up the
-integer and allocates space on the heap, when you could have just
-used a primitive int on the stack. That seems like a trivial concern,
-but if you suddenly have to deal with millions of these `TagId`s, it
-could quickly become a real concern.
+integer and allocates space on the heap, when you could have just used
+a primitive int. That seems like a trivial concern, but if you
+suddenly have to deal with millions of these `TagId`s, it could
+quickly become a real concern.
 
 But wait, doesn't the Haskell code do the same thing? No, it does
 not. Here's the really cool thing about the `newtype` definition in

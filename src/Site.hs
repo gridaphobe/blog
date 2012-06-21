@@ -115,7 +115,9 @@ post = do
     let slugS = B.unpack slug
     posts <- gets _posts
     if takeExtension slugS == ".lhs"
-        then serveFile $ "resources/posts/" ++ slugS
+        then do let path = "resources/posts/" ++ slugS
+                b <- liftIO $ doesFileExist path
+                if b then serveFile path else pass
         else do modifyResponse $ addHeader "Content-Type" "text/html; charset=utf-8"
                 case M.lookup slugS posts of
                     Just post -> writeHtml $ layout (title post) (renderPost post)
