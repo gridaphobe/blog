@@ -6,6 +6,7 @@ module Post
   , loadPosts
   ) where
 
+import           Control.Monad
 import           Data.Map                     (Map)
 import qualified Data.Map                     as M
 import           Data.Text                    (Text)
