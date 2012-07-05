@@ -28,15 +28,17 @@ entry :: Post -> Html
 entry p = entry_ $ do
     title_ $ toHtml $ title p
     link_ ! href ("http://eseidel.org/posts/" `mappend` toValue (slug p))
+    published_ $ toHtml $ formatTime defaultTimeLocale "%FT%XZ" $ date p
     updated_ $ toHtml $ formatTime defaultTimeLocale "%FT%XZ" $ date p
     id_ $ toHtml $ "tag:gridaphobe.blog,2012:" `mappend` slug p
     content_ ! customAttribute "type" "html" $ toHtml $ renderHtml $ content p
 
-feed_, entry_, title_, updated_, id_, content_, author_, name_, email_ :: HtmlM a -> HtmlM b
+feed_, entry_, title_, updated_, id_, content_, author_, name_, email_, published_ :: HtmlM a -> HtmlM b
 feed_ = Parent "feed" "<feed" "</feed>"
 entry_ = Parent "entry" "<entry" "</entry>"
 title_ = Parent "title" "<title" "</title>"
 updated_ = Parent "updated" "<updated" "</updated>"
+published_ = Parent "published" "<published" "</published>"
 id_ = Parent "id" "<id" "</id>"
 content_ = Parent "content" "<content" "</content>"
 author_ = Parent "author" "<author" "</author>"

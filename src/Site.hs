@@ -262,7 +262,7 @@ codeH = do
 routes :: [(ByteString, AppHandler ())]
 routes = exactly [ ("",              indexH)
                  , ("atom.xml",      feedH)
-                 , ("blah",          feedH)
+                 , ("blah2",          feedH)
                  , ("css/style.css", styleH)
                  , ("css/code.css",  codeH)
                  , ("posts/:slug",   postH)
