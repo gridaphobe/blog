@@ -14,7 +14,7 @@ import Post
 feed :: [Post] -> Html
 feed ps = feed_ ! customAttribute "xmlns" "http://www.w3.org/2005/Atom" $ do
     title_ "Eric Seidel"
-    link_ ! rel "self" ! href "http://eseidel.org/atom.xml"
+    link_ ! rel "self" ! href "http://eseidel.org/feed"
     link_ ! href "http://eseidel.org/"
     updated_ $ toHtml $ formatTime defaultTimeLocale "%FT%XZ" $ date $ head ps
     id_ "tag:gridaphobe.blog,2012:"

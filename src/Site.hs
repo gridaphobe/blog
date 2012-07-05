@@ -191,7 +191,7 @@ layout title body = H.docTypeHtml $ do
         -- H.link ! A.href "http://feeds.feedburner.com/gridaphobe"
         --     ! A.type_ "application/rss+xml" ! A.rel "alternate"
         --     ! A.title "Eric Seidel"
-        H.link ! A.href "/atom.xml" ! A.type_ "application/atom+xml"
+        H.link ! A.href "/feed" ! A.type_ "application/atom+xml"
             ! A.rel "alternate" ! A.title "Eric Seidel"
         css "http://fonts.googleapis.com/css?family=Ubuntu|Vollkorn|Inconsolata"
         css "/css/bootstrap.min.css"
