@@ -1,6 +1,6 @@
 % GeekTool + Bowtie = Awesome
 % Eric Seidel
-% Thu, 13 Jan 2011 00:00:00 GMT
+% Thu, 13 Jan 2011 00:00:00 -05:00
 
 So today I discovered two awesome utilities for customizing a Mac
 desktop: [GeekTool][1] and [Bowtie][2]. GeekTool allows you to display

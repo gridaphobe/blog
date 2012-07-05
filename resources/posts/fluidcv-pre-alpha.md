@@ -1,6 +1,6 @@
 % FluidCV Pre-Alpha
 % Eric Seidel
-% Thu, 17 Feb 2011 00:00:00 GMT
+% Thu, 17 Feb 2011 00:00:00 -05:00
 
 Quick update on the status of [FluidCV][fcv]. I've added some documenation
 to the home page, and opened the app to anyone with a [Fluidinfo][] account.

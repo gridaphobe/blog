@@ -1,6 +1,6 @@
 % Fluidinfo Developer Competition
 % Eric Seidel
-% Tue, 05 Apr 2011 17:52:17 GMT
+% Tue, 05 Apr 2011 17:52:17 -05:00
 
 I've finally had time to work on something for the
 [Fluidinfo & O'Reilly API Competition][api-comp], which ends this weekend.

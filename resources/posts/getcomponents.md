@@ -1,6 +1,6 @@
 % What is GetComponents?
 % Eric Seidel
-% Sun, 27 Feb 2011 00:00:00 GMT
+% Sun, 27 Feb 2011 00:00:00 -05:00
 
 I've never written a blog post about [GetComponents][gc], so lets fix
 that. I started working on Getcomponents almost a year ago with the

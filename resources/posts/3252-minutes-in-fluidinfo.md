@@ -1,6 +1,6 @@
 % 3252 Minutes in Fluidinfo
 % Eric Seidel
-% Sun, 27 Mar 2011 14:56:33 GMT
+% Sun, 27 Mar 2011 14:56:33 -05:00
 
 Over the past couple weeks I've been experimenting with a Python script
 that crawls [Fluidinfo][fi]. If you're not familiar with Fluidinfo,

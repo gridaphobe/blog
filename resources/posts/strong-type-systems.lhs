@@ -1,6 +1,6 @@
 % On the Benefits of a Strong Type System
 % Eric Seidel
-% Thu, 21 Jun 2012 00:00:00 GMT
+% Thu, 21 Jun 2012 00:00:00 -05:00
 
 
 The other day I encountered a nasty bug (of my own making of course)

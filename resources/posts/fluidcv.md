@@ -1,6 +1,6 @@
 % FluidCV
 % Eric Seidel
-% Fri, 11 Feb 2011 00:00:00 GMT
+% Fri, 11 Feb 2011 00:00:00 -05:00
 
 I'm starting a new project called [FluidCV][fcv]. It will be a new way to
 create a resumé/cv, using [Fluidinfo][fdb] as the backend storage. Fluidinfo is an
