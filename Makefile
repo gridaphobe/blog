@@ -12,6 +12,7 @@
 #	ssh $(SERVER) sudo start blog
 
 deploy:
+	rm -f dist/build/blog/blog
 	git checkout deploy
 	git merge master
 	make build
