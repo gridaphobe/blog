@@ -41,36 +41,36 @@ instance Ord Post where
 
 loadPosts :: FilePath -> IO (Map String Post)
 loadPosts dir = do
-    posts <- getDirectoryContents dir >>=
-             return . filter (\p -> takeExtension p `elem` [".md", ".lhs"]) >>=
-             mapM (loadPost . combine dir)
+    posts <- liftM (filter (\p -> takeExtension p `elem` [".md", ".lhs"]))
+                   (getDirectoryContents dir)
+             >>= mapM (loadPost . combine dir)
     return $ M.fromList [(T.unpack $ slug p, p) | p <- posts]
 
 loadPost :: FilePath -> IO Post
 loadPost path = do
-    !p@(Pandoc (Meta t as d) _) <- readFile path >>=
-                                   return . readMarkdown parserState
-    return $ Post { title   = T.pack $ stringify t
-                  , slug    = T.pack $ takeBaseName path
-                  , content = writeHtml writerOptions p
-                  , authors = map (T.pack . stringify) as
-                  , date    = readTime defaultTimeLocale fmt $ stringify d
-                  , format  = format
-                  }
+    !p@(Pandoc (Meta t as d) _) <- liftM (readMarkdown parserState)
+                                         (readFile path)
+    return Post { title   = T.pack $ stringify t
+                , slug    = T.pack $ takeBaseName path
+                , content = writeHtml writerOptions p
+                , authors = map (T.pack . stringify) as
+                , date    = readTime defaultTimeLocale fmt $ stringify d
+                , format  = f
+                }
   where
     fmt = "%a, %d %b %Y %T %Z"
-    format = case takeExtension path of
+    f = case takeExtension path of
         ".md" -> MD
         ".lhs" -> LHS
         x -> error $ "Unrecognized format: " ++ x
 
     parserState :: ParserState
     parserState = defaultParserState { stateSmart = False
-                                     , stateLiterateHaskell = format == LHS
+                                     , stateLiterateHaskell = f == LHS
                                      }
 
     writerOptions :: WriterOptions
     writerOptions = defaultWriterOptions { writerHtml5     = True
                                          , writerHighlight = True
-                                         , writerLiterateHaskell = format == LHS
+                                         , writerLiterateHaskell = f == LHS
                                          }

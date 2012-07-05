@@ -12,13 +12,11 @@ module Site
   ( app
   ) where
 
-import           Control.Applicative
 import           Control.Monad.State
 import           Data.ByteString             (ByteString)
 import qualified Data.ByteString.Char8       as B
 import           Data.List
 import qualified Data.Map                    as M
-import           Data.Maybe
 import           Data.Monoid
 import           Data.Text                   (Text)
 import qualified Data.Text                   as T
@@ -37,23 +35,23 @@ import           Text.Blaze.Renderer.Text
 import           Text.Pandoc.Highlighting
 
 
-import           Application
-import           Post
-import qualified Feed as F
+import           Application                 hiding (posts)
+import           Post                        (Post, loadPosts)
+import qualified Post                        as P
+import qualified Feed                        as F
 
-writeHtml = writeLazyText . renderHtml
+
+writeHtml :: Html -> AppHandler ()
+writeHtml h = do
+  modifyResponse $ addHeader "Content-Type" "text/html; charset=utf-8"
+  writeLazyText $ renderHtml h
 
 ------------------------------------------------------------------------------
 -- | Renders the front page of the sample site.
---
--- The 'ifTop' is required to limit this to the top of a route.
--- Otherwise, the way the route table is currently set up, this action
--- would be given every request.
-index :: Handler App App ()
-index = do
+indexH :: AppHandler ()
+indexH = do
     posts <- gets _posts
-    modifyResponse $ addHeader "Content-Type" "text/html; charset=utf-8"
-    ifTop $ writeHtml $ layout "Eric Seidel" $ do
+    writeHtml $ layout "Eric Seidel" $ do
         H.img ! A.class_ "pull-right" ! A.title "Eric Seidel"
               ! A.src "/img/eric.jpg"
         H.h1 "Eric Seidel"
@@ -72,17 +70,16 @@ index = do
         H.h3 "Recent Posts"
         renderPostLinks $ take 5 $ reverse $ sort $ M.elems posts
 
-feed :: Handler App App ()
-feed = do
+feedH :: AppHandler ()
+feedH = do
     posts <- gets _posts
     modifyResponse $ addHeader "Content-Type" "application/atom+xml; charset=utf-8"
-    writeLazyText $ "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
-    writeHtml $ F.feed $ reverse $ sort $ M.elems posts
+    writeLazyText "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+    writeLazyText $ renderHtml $ F.feed $ reverse $ sort $ M.elems posts
 
-archive :: Handler App App ()
-archive = ifTop $ do
+archiveH :: AppHandler ()
+archiveH = do
     posts <- gets _posts
-    modifyResponse $ addHeader "Content-Type" "text/html; charset=utf-8"
     writeHtml $ layout "Eric Seidel" $ do
         H.h1 "All Posts"
         renderPostLinks $ reverse $ sort $ M.elems posts
@@ -90,10 +87,10 @@ archive = ifTop $ do
 renderPost :: Post -> Html
 renderPost post = do
     H.h1 $ do
-        H.toHtml $ title post
+        H.toHtml $ P.title post
         H.small ! A.class_ "pull-right" $ H.toHtml $
-            formatTime defaultTimeLocale "Posted on %B %d, %Y" $ date post
-    H.article $ content post
+            formatTime defaultTimeLocale "Posted on %B %d, %Y" $ P.date post
+    H.article $ P.content post
 
 
 renderPostLinks :: [Post] -> Html
@@ -102,32 +99,28 @@ renderPostLinks posts = do
   where
     postLink post = do
         H.li $ do
-            H.a ! A.href (H.toValue $ "/posts/" `mappend` slug post) $
-                H.toHtml $ title post
+            H.a ! A.href (H.toValue $ "/posts/" `mappend` P.slug post) $
+                H.toHtml $ P.title post
             H.preEscapedText " &ndash; "
-            H.toHtml $ formatTime defaultTimeLocale "%B %d, %Y" $ date post
+            H.toHtml $ formatTime defaultTimeLocale "%B %d, %Y" $ P.date post
 
 ------------------------------------------------------------------------------
 -- | Renders a single post
-post :: Handler App App ()
-post = do
-    slug <- decodedParam "slug"
-    let slugS = B.unpack slug
+postH :: AppHandler ()
+postH = do
+    Just slug <- liftM (fmap B.unpack) (getParam "slug")
     posts <- gets _posts
-    if takeExtension slugS == ".lhs"
-        then do let path = "resources/posts/" ++ slugS
-                b <- liftIO $ doesFileExist path
-                if b then serveFile path else pass
-        else do modifyResponse $ addHeader "Content-Type" "text/html; charset=utf-8"
-                case M.lookup slugS posts of
-                    Just post -> writeHtml $ layout (title post) (renderPost post)
+    if takeExtension slug == ".lhs"
+        then do let f = "resources/posts/" ++ slug
+                b <- liftIO $ doesFileExist f
+                if b then serveFile f else pass
+        else case M.lookup slug posts of
+                    Just post -> writeHtml $ layout (P.title post)
+                                                    (renderPost post)
                     Nothing -> pass
-  where
-    decodedParam p = fromMaybe "" <$> getParam p
 
-publications :: Handler App App ()
-publications = do
-    modifyResponse $ addHeader "Content-Type" "text/html; charset=utf-8"
+publicationsH :: AppHandler ()
+publicationsH =
     writeHtml $ layout "Eric Seidel" $ do
         H.h1 "Publications"
         H.h3 "Papers"
@@ -176,10 +169,9 @@ publications = do
 
 
 
-notFound :: Handler App App ()
-notFound = do
+notFoundH :: AppHandler ()
+notFoundH = do
     modifyResponse $ setResponseCode 404
-    modifyResponse $ addHeader "Content-Type" "text/html; charset=utf-8"
     writeHtml $ layout "Eric Seidel" $ do
         H.h1 "Not Found"
         H.p "Sorry, couldn't find that... Try again?"
@@ -232,8 +224,8 @@ layout title body = H.docTypeHtml $ do
 
 ------------------------------------------------------------------------------
 -- | Extra styling
-style :: Handler App App ()
-style = do
+styleH :: AppHandler ()
+styleH = do
     modifyResponse $ addHeader "Content-Type" "text/css; charset=utf-8"
     writeLazyText $ C.renderCSS $ C.runCSS $ do
         C.rule ".container" $ do
@@ -260,27 +252,31 @@ style = do
             C.marginBottom "15px"
             C.borderBottom "1px solid #E5E5E5"
 
-code :: Handler App App ()
-code = do
+codeH :: AppHandler ()
+codeH = do
     modifyResponse $ addHeader "Content-Type" "text/css; charset=utf-8"
     writeText $ T.pack $ styleToCss pygments
 
 ------------------------------------------------------------------------------
 -- | The application's routes.
-routes :: [(ByteString, Handler App App ())]
-routes = [ ("/",              index)
-         , ("/atom.xml",      feed)
-         , ("/css/style.css", style)
-         , ("/css/code.css",  code)
-         , ("/posts/:slug",   post)
-         , ("/posts",         archive)
-         , ("/projects",      redirect "http://github.com/gridaphobe")
-         , ("/publications",  publications)
-         , ("/resume",        redirect "http://fluidcv.com/gridaphobe")
-         , ("/cv",            redirect "http://fluidcv.com/gridaphobe")
-         , ("", serveDirectory "resources/static")
-         , ("", notFound)
-         ]
+routes :: [(ByteString, AppHandler ())]
+routes = exactly [ ("",              indexH)
+                 , ("atom.xml",      feedH)
+                 , ("blah",          feedH)
+                 , ("css/style.css", styleH)
+                 , ("css/code.css",  codeH)
+                 , ("posts/:slug",   postH)
+                 , ("posts",         archiveH)
+                 , ("projects",      redirect "http://github.com/gridaphobe")
+                 , ("publications",  publicationsH)
+                 , ("resume",        redirect "http://fluidcv.com/gridaphobe")
+                 , ("cv",            redirect "http://fluidcv.com/gridaphobe")
+                 ] `mappend`
+                 [ ("", serveDirectory "resources/static")
+                 , ("", notFoundH)
+                 ]
+  where
+    exactly = map (\(p, h) -> (p, ifTop h))
 
 ------------------------------------------------------------------------------
 -- | The application initializer.

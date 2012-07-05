@@ -70,7 +70,7 @@ main = do
     -- automatically by the splice.
     (conf, site, cleanup) <- $(loadSnapTH [| getConf |]
                                           'getActions
-                                          ["posts"])
+                                          ["resources/posts"])
 
     _ <- try $ httpServe conf site :: IO (Either SomeException ())
     cleanup
