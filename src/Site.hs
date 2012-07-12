@@ -208,13 +208,13 @@ layout title body = H.docTypeHtml $ do
                         H.a ! A.href "/posts" $ "Archive"
                         H.span ! A.class_ "divider" $ "|"
                     H.li $ do
-                        H.a ! A.href "/projects" $ "Projects"
+                        H.a ! A.href "http://gridaphobe.github.com" $ "Projects"
                         H.span ! A.class_ "divider" $ "|"
                     H.li $ do
                         H.a ! A.href "/publications" $ "Publications"
                         H.span ! A.class_ "divider" $ "|"
                     H.li $ do
-                        H.a ! A.href "/cv" $ "Resumé"
+                        H.a ! A.href "http://fluidcv.com/gridaphobe" $ "Resumé"
             H.section body
             H.footer ! A.class_ "footer" $ do
                 H.p $ do
@@ -239,9 +239,14 @@ styleH = do
             C.fontFamily "Inconsolata, monospace"
             C.color "black"
             C.borderStyle "none"
-        C.rule "nav ul li a" $ do
-            C.fontFamily "Ubuntu, sans-serif"
-            C.color "black"
+        C.rule "nav" $ do
+            C.marginLeft "auto"
+            C.marginRight "auto"
+            C.textAlign "center"
+            C.width "auto"
+            C.rule "ul li a" $ do
+                C.fontFamily "Ubuntu, sans-serif"
+                C.color "black"
         C.rule "footer" $ do
             C.marginTop "5px"
             C.borderTop "1px solid #E5E5E5"
@@ -267,7 +272,7 @@ routes = exactly [ ("",              indexH)
                  , ("css/code.css",  codeH)
                  , ("posts/:slug",   postH)
                  , ("posts",         archiveH)
-                 , ("projects",      redirect "http://github.com/gridaphobe")
+                 , ("projects",      redirect "http://gridaphobe.github.com")
                  , ("publications",  publicationsH)
                  , ("resume",        redirect "http://fluidcv.com/gridaphobe")
                  , ("cv",            redirect "http://fluidcv.com/gridaphobe")
