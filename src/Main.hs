@@ -9,7 +9,7 @@ import           Network.Wai.Middleware.RequestLogger
 import           Network.Wai.Middleware.Static
 import           System.Directory
 import           System.FilePath
-
+import           System.Posix.Env
 import           Web.Scotty
 
 import           Post
@@ -18,8 +18,9 @@ import qualified View                        as V
 
 main :: IO ()
 main = do
+    port <- getEnv "PORT"
     posts <- loadPosts "resources/posts"
-    scotty 8000 $ do
+    scotty (maybe 8000 read port) $ do
         middleware logStdoutDev
         middleware $ staticPolicy (noDots >-> addBase "resources/static")
 
@@ -30,10 +31,10 @@ main = do
             atom $ V.feed $ sorted posts
 
         get "/css/style.css" $
-            css $ V.style
+            css V.style
 
         get "/css/code.css" $
-            css $ V.code
+            css V.code
 
         get "/posts" $
             html $ V.archive $ sorted posts
@@ -48,15 +49,17 @@ main = do
                     Just p -> html $ V.post p
                     Nothing -> next
 
-        get "/projects" $ redirect "http://gridaphobe.github.com"
+        get "/projects" $
+            redirect "http://gridaphobe.github.com"
 
         get "/publications" $
-            html $ V.publications
+            html V.publications
 
         get "/resume" $ redirect "http://fluidcv.com/gridaphobe"
         get "/cv"     $ redirect "http://fluidcv.com/gridaphobe"
 
-        notFound $ html V.notFound
+        notFound $
+            html V.notFound
 
 
 atom :: T.Text -> ActionM ()
@@ -68,7 +71,6 @@ css :: T.Text -> ActionM ()
 css t = do
     text t
     header "Content-Type" "text/css; charset=utf-8"
-
 
 whenM :: (Monad m) => m Bool -> m () -> m ()
 whenM b m = do
