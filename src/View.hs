@@ -85,46 +85,51 @@ publications = layout "Eric Seidel" $ do
     H.h3 "Papers"
     H.ul $ do
         H.li $ do
-            "E. L. Seidel. 2012. "
-            H.a ! A.href "/pub/fluidinfo-bwupep11.pdf" $ H.em
-                "Metadata Management in Scientific Computing"
-            ". Journal of Computational Science Education. Accepted for publication."
+            "E. L. Seidel. "
+            H.a ! A.href "/pub/fluidinfo-bwupep11.pdf" $
+                "Metadata Management in Scientific Computing."
+            H.em " Journal of Computational Science Education 3 (2). "
+            "2012."
+        H.li $ do
+            "W. L. Khoo, E. L. Seidel, and Z. Zhu. "
+            H.a ! A.href "/pub/virtualenv-icchp12.pdf" $
+                "Designing a Virtual Environment to Evaluate Multimodal Sensors for Assisting the Visually Impaired."
+            H.em " In Proceedings of the 13th Iternational Conference on Computers Helping People with Special Needs (2). "
+            "2012."
         H.li $ do
             "G. Allen, T. Goodale, F. Löffler, D. Rideout, E. Schnetter, "
-            "and E. L. Seidel. 2010. "
-            H.a ! A.href "/pub/ccl-cbhpc10.pdf" $ H.em
-                "Component Specification in the Cactus Framework: The Cactus Configuration Language"
-            ". Grid Computing (GRID), 2010 11th IEEE/ACM International Conference on. DOI="
-            H.a ! A.href "http://dx.doi.org/10.1109/GRID.2010.5698008" $
-                "10.1109/GRID.2010.5698008"
+            "and E. L. Seidel. "
+            H.a ! A.href "/pub/ccl-cbhpc10.pdf" $
+                "Component Specification in the Cactus Framework: The Cactus Configuration Language."
+            H.em " In Proceedings of the 11th IEEE/ACM International Conference on Grid Computing. "
+            "2010."
         H.li $ do
             "E. L. Seidel, G. Allen, S. Brandt, F. Löffler, and E. Schnetter. 2010. "
-            H.a ! A.href "/pub/crl-tg10.pdf" $ H.em
-                "Simplifying Complex Software Assembly: The Component Retrieval Language and Implementation"
-            ". In Proceedings of the 2010 Teragrid Conference "
-            "(Pittsburgh, Pennsylvania, August 02 – 05, 2010). TG '10. ACM, "
-            "New York, NY, 1-8. DOI="
-            H.a ! A.href "http://doi.acm.org/10.1145/1838574.1838592" $
-                "10.1145/1838574.1838592"
+            H.a ! A.href "/pub/crl-tg10.pdf" $
+                "Simplifying Complex Software Assembly: The Component Retrieval Language and Implementation."
+            H.em " In Proceedings of the 2010 Teragrid Conference. "
+            "2010."
+
     H.h3 "Posters"
     H.ul $ do
         H.li $ do
-            "E. L. Seidel and G. Allen. 2011. "
-            H.a ! A.href "/pub/fluidinfo-poster.pdf" $ H.em
+            "E. L. Seidel and G. Allen. "
+            H.a ! A.href "/pub/fluidinfo-poster.pdf" $
                 "Metadata Management in Scientific Computing"
-            ". Presented at TeraGrid '11 in Salt Lake City, UT."
+            ". Presented at TeraGrid '11 in Salt Lake City, UT. 2011."
         H.li $ do
-            "E. L. Seidel, G. Allen, S. Brandt, F. Löffler, and E. Schnetter. 2010. "
-            H.a ! A.href "/pub/crl-poster.pdf" $ H.em
+            "E. L. Seidel, G. Allen, S. Brandt, F. Löffler, and E. Schnetter. "
+            H.a ! A.href "/pub/crl-poster.pdf" $
                 "Simplifying Complex Software Assembly: The Component Retrieval Language and Implementation"
-            ". Presented at TeraGrid '10 in Pittsburgh, PA."
+            ". Presented at TeraGrid '10 in Pittsburgh, PA. 2010."
+
     H.h3 "Presentations"
     H.ul $ do
         H.li $ do
-            "E. L. Seidel, G. Allen, S. Brandt, F. Löffler, and E. Schnetter. 2010. "
-            H.a ! A.href "/pub/crl-presentation.pdf" $ H.em
+            "E. L. Seidel, G. Allen, S. Brandt, F. Löffler, and E. Schnetter. "
+            H.a ! A.href "/pub/crl-presentation.pdf" $
                 "Simplifying Complex Software Assembly: The Component Retrieval Language and Implementation"
-            ". Presented at TeraGrid '10 in Pittsburgh, PA."
+            ". Presented at TeraGrid '10 in Pittsburgh, PA. 2010. "
 
 
 
