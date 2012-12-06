@@ -5,6 +5,7 @@ import Data.Monoid
 import Data.Time.Format
 import System.Locale
 import Text.Blaze
+import Text.Blaze.Html5 hiding (head, title)
 import Text.Blaze.Html5.Attributes (rel, href)
 import Text.Blaze.Internal
 import Text.Blaze.Renderer.String
@@ -33,7 +34,7 @@ entry p = entry_ $ do
     id_ $ toHtml $ "tag:gridaphobe.blog,2012:" `mappend` slug p
     content_ ! customAttribute "type" "html" $ toHtml $ renderHtml $ content p
 
-feed_, entry_, title_, updated_, id_, content_, author_, name_, email_, published_ :: HtmlM a -> HtmlM b
+feed_, entry_, title_, updated_, id_, content_, author_, name_, email_, published_ :: Html -> Html
 feed_ = Parent "feed" "<feed" "</feed>"
 entry_ = Parent "entry" "<entry" "</entry>"
 title_ = Parent "title" "<title" "</title>"
@@ -45,5 +46,5 @@ author_ = Parent "author" "<author" "</author>"
 name_ = Parent "name" "<name" "</name>"
 email_ = Parent "email" "<email" "</email>"
 
-link_ :: HtmlM a
+link_ :: Html
 link_ = Leaf "link" "<link" "/>"

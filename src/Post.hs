@@ -4,9 +4,12 @@ module Post
   ( Post(..)
   , Format(..)
   , loadPosts
+  , mostRecent
+  , sorted
   ) where
 
 import           Control.Monad
+import           Data.List
 import           Data.Map                     (Map)
 import qualified Data.Map                     as M
 import           Data.Text                    (Text)
@@ -39,6 +42,12 @@ instance Eq Post where
 
 instance Ord Post where
     compare a b = compare (date a) (date b)
+
+mostRecent :: Int -> Map String Post -> [Post]
+mostRecent n = take n . reverse . sort . M.elems
+
+sorted :: Map String Post -> [Post]
+sorted = reverse . sort . M.elems
 
 loadPosts :: FilePath -> IO (Map String Post)
 loadPosts dir = do
