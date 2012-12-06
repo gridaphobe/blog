@@ -211,6 +211,8 @@ style = C.renderCSS $ C.runCSS $ do
     C.rule "section h1" $ do
         C.marginBottom "15px"
         C.borderBottom "1px solid #E5E5E5"
+    C.rule ".pull-right" $
+        C.paddingLeft "20px"
 
 code :: L.Text
 code = L.pack $ styleToCss pygments
