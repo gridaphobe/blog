@@ -2,6 +2,7 @@
 module Main where
 
 import           Control.Monad
+import           Control.Monad.Error
 import           Control.Monad.IO.Class
 import qualified Data.Map                    as M
 import qualified Data.Text.Lazy              as T
@@ -39,15 +40,11 @@ main = do
         get "/posts" $
             html $ V.archive $ sorted posts
 
-        get "/posts/:slug" $ do
-            s <- param "slug"
-            if takeExtension s == ".lhs"
-                then do let f = "resources/posts/" ++ s
-                        whenM (liftIO $ doesFileExist f) (file f)
-                        next
-                else case M.lookup s posts of
-                    Just p -> html $ V.post p
-                    Nothing -> next
+        get "/posts/:slug" $ \s -> msum
+            [ let f = "resources/posts/" ++ s
+              in guardM (liftIO $ doesFileExist f) >> file f
+            , html . V.post =<< lookupM s posts
+            ]
 
         get "/projects" $
             redirect "http://gridaphobe.github.com"
@@ -62,6 +59,10 @@ main = do
             html V.notFound
 
 
+--------------------------------------------------------------------------------
+-- | Miscellaneous utilities for working with Scotty
+--------------------------------------------------------------------------------
+
 atom :: T.Text -> ActionM ()
 atom t = do
     text t
@@ -72,7 +73,14 @@ css t = do
     text t
     header "Content-Type" "text/css; charset=utf-8"
 
-whenM :: (Monad m) => m Bool -> m () -> m ()
-whenM b m = do
-    b' <- b
-    when b' m
+guardM :: (MonadPlus m) => m Bool -> m ()
+guardM b = b >>= guard
+
+lookupM :: (MonadPlus m, Ord k) => k -> M.Map k a -> m a
+lookupM k m = case M.lookup k m of
+                Nothing -> mzero
+                Just v  -> return v
+
+instance MonadPlus ActionM where
+    mzero = next
+    a `mplus` b = a `catchError` \_ -> b

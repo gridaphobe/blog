@@ -20,7 +20,7 @@ import           System.Directory
 import           System.FilePath
 import           System.Locale
 import           Text.Blaze.Html5             (Html)
-import           Text.Pandoc.Definition       (Pandoc (..), Meta (..))
+import           Text.Pandoc.Definition       (Meta (..), Pandoc (..))
 import           Text.Pandoc.Parsing
 import           Text.Pandoc.Readers.Markdown
 import           Text.Pandoc.Shared
@@ -29,12 +29,12 @@ import           Text.Pandoc.Writers.HTML
 data Format = MD | LHS deriving (Eq)
 
 data Post = Post
-    { title   :: Text
-    , slug    :: Text
-    , content :: Html
-    , authors :: [Text]
-    , date    :: UTCTime
-    , format  :: Format
+    { title   :: !Text
+    , slug    :: !Text
+    , content :: !Html
+    , authors :: ![Text]
+    , date    :: !UTCTime
+    , format  :: !Format
     }
 
 instance Eq Post where
@@ -54,11 +54,11 @@ loadPosts dir = do
     posts <- liftM (filter (\p -> takeExtension p `elem` [".md", ".lhs"]))
                    (getDirectoryContents dir)
              >>= mapM (loadPost . combine dir)
-    return $ M.fromList [(T.unpack $ slug p, p) | p <- posts]
+    return $! M.fromList [(T.unpack $ slug p, p) | p <- posts]
 
 loadPost :: FilePath -> IO Post
 loadPost path = do
-    !p@(Pandoc (Meta t as d) _) <- liftM (readMarkdown parserState)
+    p@(Pandoc (Meta t as d) _) <- liftM (readMarkdown parserState)
                                          (readFile path)
     return Post { title   = T.pack $ stringify t
                 , slug    = T.pack $ takeBaseName path
