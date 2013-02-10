@@ -155,7 +155,7 @@ layout title body = renderHtml $ H.docTypeHtml $ do
         --     ! A.title "Eric Seidel"
         H.link ! A.href "/feed" ! A.type_ "application/atom+xml"
             ! A.rel "alternate" ! A.title "Eric Seidel"
-        css "http://fonts.googleapis.com/css?family=Ubuntu|Vollkorn|Inconsolata"
+        css "http://fonts.googleapis.com/css?family=Ubuntu|PT+Serif:400,700,400italic|Inconsolata"
         css "/css/bootstrap.min.css"
         css "/css/style.css"
         css "/css/code.css"
