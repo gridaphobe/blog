@@ -96,7 +96,7 @@ textarea {
 }
 body {
   margin: 0;
-  font-family: Vollkorn, serif;
+  font-family: 'PT Serif', serif;
   font-size: 18px;
   line-height: 24px;
   color: #333333;
@@ -137,7 +137,7 @@ a:hover {
 }
 p {
   margin: 0 0 12px;
-  font-family: Vollkorn, serif;
+  font-family: 'PT Serif', serif;
   font-size: 18px;
   line-height: 24px;
 }
