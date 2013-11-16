@@ -11,7 +11,8 @@ import           Network.Wai.Middleware.Static
 import           System.Directory
 import           System.FilePath
 import           System.Posix.Env
-import           Web.Scotty
+import           Web.Scotty hiding (next)
+import           Web.Scotty.Trans (ActionT, next)
 
 import           Post
 import qualified View                        as V
@@ -40,11 +41,12 @@ main = do
         get "/posts" $
             html $ V.archive $ sorted posts
 
-        get "/posts/:slug" $ \s -> msum
-            [ let f = "resources/posts/" ++ s
-              in guardM (liftIO $ doesFileExist f) >> file f
-            , html . V.post =<< lookupM s posts
-            ]
+        get "/posts/:slug" $ do
+          s <- param "slug"
+          msum [ let f = "resources/posts/" ++ s
+                 in guardM (liftIO $ doesFileExist f) >> file f
+               , html . V.post =<< lookupM s posts
+               ]
 
         get "/projects" $
             redirect "http://gridaphobe.github.com"
@@ -66,12 +68,12 @@ main = do
 atom :: T.Text -> ActionM ()
 atom t = do
     text t
-    header "Content-Type" "application/atom+xml; charset=utf-8"
+    setHeader "Content-Type" "application/atom+xml; charset=utf-8"
 
 css :: T.Text -> ActionM ()
 css t = do
     text t
-    header "Content-Type" "text/css; charset=utf-8"
+    setHeader "Content-Type" "text/css; charset=utf-8"
 
 guardM :: (MonadPlus m) => m Bool -> m ()
 guardM b = b >>= guard
@@ -81,6 +83,6 @@ lookupM k m = case M.lookup k m of
                 Nothing -> mzero
                 Just v  -> return v
 
-instance MonadPlus ActionM where
+instance (MonadPlus m) => MonadPlus (ActionT m) where
     mzero = next
     a `mplus` b = a `catchError` \_ -> b

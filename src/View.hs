@@ -13,7 +13,8 @@ import           Text.Blaze.Html5            (Html, (!))
 import qualified Text.Blaze.Html5            as H
 import qualified Text.Blaze.Html5.Attributes as A
 import           Text.Blaze.Html.Renderer.Text
-import           Text.Pandoc.Highlighting
+import           Text.Highlighting.Kate.Format.HTML
+import           Text.Highlighting.Kate.Styles
 
 
 import           Post                        (Post)
@@ -28,7 +29,7 @@ index ps =
               ! A.src "/img/eric.jpg"
         H.h1 "Eric Seidel"
         H.p $ do
-            "I'm Eric Seidel. I am a first-year PhD student in Computer Science at "
+            "I'm Eric Seidel. I am a second-year PhD student in Computer Science at "
             H.a ! A.href "http://cs.ucsd.edu" $ "UC San Diego"
             ". Here you'll find a "
             "collection of thoughts, a list of current and past projects, "

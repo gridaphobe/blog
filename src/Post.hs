@@ -8,10 +8,12 @@ module Post
   , sorted
   ) where
 
+import           Control.Applicative
 import           Control.Monad
 import           Data.List
 import           Data.Map                     (Map)
 import qualified Data.Map                     as M
+import qualified Data.Set                     as S
 import           Data.Text                    (Text)
 import qualified Data.Text                    as T
 import           Data.Time.Clock              (UTCTime)
@@ -20,11 +22,9 @@ import           System.Directory
 import           System.FilePath
 import           System.Locale
 import           Text.Blaze.Html5             (Html)
-import           Text.Pandoc.Definition       (Meta (..), Pandoc (..))
-import           Text.Pandoc.Parsing
-import           Text.Pandoc.Readers.Markdown
+import           Text.Highlighting.Kate.Styles
+import           Text.Pandoc hiding (Format)
 import           Text.Pandoc.Shared
-import           Text.Pandoc.Writers.HTML
 
 data Format = MD | LHS deriving (Eq)
 
@@ -44,10 +44,10 @@ instance Ord Post where
     compare a b = compare (date a) (date b)
 
 mostRecent :: Int -> Map String Post -> [Post]
-mostRecent n = take n . reverse . sort . M.elems
+mostRecent n = take n . sortBy (flip compare) . M.elems
 
 sorted :: Map String Post -> [Post]
-sorted = reverse . sort . M.elems
+sorted = sortBy (flip compare) . M.elems
 
 loadPosts :: FilePath -> IO (Map String Post)
 loadPosts dir = do
@@ -58,13 +58,12 @@ loadPosts dir = do
 
 loadPost :: FilePath -> IO Post
 loadPost path = do
-    p@(Pandoc (Meta t as d) _) <- liftM (readMarkdown parserState)
-                                         (readFile path)
-    return Post { title   = T.pack $ stringify t
+    p@(Pandoc m _) <- readMarkdown readerOptions <$> readFile path
+    return Post { title   = T.pack $ stringify $ docTitle m
                 , slug    = T.pack $ takeBaseName path
                 , content = writeHtml writerOptions p
-                , authors = map (T.pack . stringify) as
-                , date    = readTime defaultTimeLocale fmt $ stringify d
+                , authors = map (T.pack . stringify) $ docAuthors m
+                , date    = readTime defaultTimeLocale fmt $ stringify $ docDate m
                 , format  = f
                 }
   where
@@ -74,13 +73,16 @@ loadPost path = do
         ".lhs" -> LHS
         x -> error $ "Unrecognized format: " ++ x
 
-    parserState :: ParserState
-    parserState = defaultParserState { stateSmart = False
-                                     , stateLiterateHaskell = f == LHS
-                                     }
+    exts | f == LHS  = S.insert Ext_literate_haskell pandocExtensions
+         | otherwise = pandocExtensions
+
+    readerOptions :: ReaderOptions
+    readerOptions = def { readerExtensions = exts }
 
     writerOptions :: WriterOptions
-    writerOptions = defaultWriterOptions { writerHtml5     = True
-                                         , writerHighlight = True
-                                         , writerLiterateHaskell = f == LHS
-                                         }
+    writerOptions = def { writerHtml5          = True
+                        , writerHtmlQTags      = True
+                        , writerHighlight      = True
+                        , writerHighlightStyle = pygments
+                        , writerExtensions     = exts
+                        }
