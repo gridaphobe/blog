@@ -1,1 +1,1 @@
-web: ./dist/build/blog/blog +RTS -N
+web: ./.cabal-sandbox/bin/blog +RTS -N
