@@ -20,6 +20,8 @@ Executable blog
 
   Build-depends:
     base >= 4 && < 5,
+    alex == 3.1.*,
+    happy == 1.19.*,
     blaze-html == 0.6.*,
     blaze-markup == 0.5.*,
 --    bytestring == 0.9.*,
