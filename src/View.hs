@@ -45,7 +45,7 @@ index ps =
 
 feed :: [Post] -> L.Text
 feed ps =
-    mconcat ["<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+    mconcat [ "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
             , renderHtml $ F.feed ps
             ]
 
@@ -85,6 +85,18 @@ publications = layout "Eric Seidel" $ do
     H.h1 "Publications"
     H.h3 "Papers"
     H.ul $ do
+        H.li $ do
+            "N. Vazou, E. L. Seidel, and R. Jhala. "
+            H.a ! A.href "/pub/realworldliquid-haskell14.pdf" $
+                "LiquidHaskell: Experience with Refinement Types in the Real World."
+            H.em " Accepted for publication at Haskell '14. "
+            "2014."
+        H.li $ do
+            "N. Vazou, E. L. Seidel, R. Jhala, D. Vytiniotis, and S. Peyton-Jones. "
+            H.a ! A.href "/pub/haskellrefinements-icfp14.pdf" $
+                "Refinement Types for Haskell."
+            H.em " Accepted for publication at ICFP '14. "
+            "2014."
         H.li $ do
             "E. L. Seidel. "
             H.a ! A.href "/pub/fluidinfo-bwupep11.pdf" $
