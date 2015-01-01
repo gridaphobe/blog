@@ -1,8 +1,8 @@
 % (Ab)using Compiler Plugins to Improve Embedded DSLs
 % Eric Seidel
-% Thu, 4 Dec 2014 00:00:00 -05:00
+% Thu, 04 Dec 2014 00:00:00 -05:00
 
-*This is cross-posted from [Galois] blog, where I'm currently finishing an internship.*
+*This is cross-posted from the [Galois] blog, where I'm currently finishing an internship.*
 
 [Galois]: http://galois.com/blog/2014/12/abusing-compiler-plugins-improve-embedded-dsls/
 
@@ -71,7 +71,7 @@ As an alternative, we could use a pre-processor to transform the original Haskel
 
 ## Strategy
 
-GHC allows users to write optimization passes over [Core], the first of a few intermediate representations used by GHC. Core is a simple language with just a handful of data constructors, essentially [^actually]
+GHC allows users to write optimization passes over [Core], the first of a few intermediate representations used by GHC. Core is a simple language with just a handful of data constructors, essentially^[The actual definition has two extra constructors and a type parameter which I've instantiated with `Id`, but this is not particularly relevant to our use-case.]
 
 ```haskell
 data CoreExpr
@@ -86,7 +86,6 @@ data CoreExpr
 ```
 
 [Core]: https://downloads.haskell.org/~ghc/latest/docs/html/libraries/ghc/CoreSyn.html#t:Expr
-[^actually]: The actual definition has two extra constructors and a type parameter which I've instantiated with `Id`, but this is not particularly relevant to our use-case.
 
 This makes our life a whole lot easier since we don't have to consider the entire surface area of Haskell's syntax when we write our plugin.
 
