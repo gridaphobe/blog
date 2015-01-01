@@ -1,6 +1,6 @@
 % (Ab)using Compiler Plugins to Improve Embedded DSLs
 % Eric Seidel
-% Thursday, 4 Dec 2014 00:00:00 -05:00
+% Thu, 4 Dec 2014 00:00:00 -05:00
 
 *This is cross-posted from [Galois] blog, where I'm currently finishing an internship.*
 

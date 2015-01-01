@@ -29,7 +29,7 @@ index ps =
               ! A.src "/img/eric.jpg"
         H.h1 "Eric Seidel"
         H.p $ do
-            "I'm Eric Seidel. I am a second-year PhD student in Computer Science at "
+            "I'm Eric Seidel. I am a third-year PhD student in Computer Science at "
             H.a ! A.href "http://cs.ucsd.edu" $ "UC San Diego"
             ". Here you'll find a "
             "collection of thoughts, a list of current and past projects, "
@@ -86,16 +86,22 @@ publications = layout "Eric Seidel" $ do
     H.h3 "Papers"
     H.ul $ do
         H.li $ do
+            "E. L. Seidel, N. Vazou, and R. Jhala. "
+            H.a ! A.href "/pub/target-esop15.pdf" $
+                "Type Targeted Testing."
+            H.em " Accepted for publication in ESOP '15. "
+            "2015."
+        H.li $ do
             "N. Vazou, E. L. Seidel, and R. Jhala. "
             H.a ! A.href "/pub/realworldliquid-haskell14.pdf" $
                 "LiquidHaskell: Experience with Refinement Types in the Real World."
-            H.em " Accepted for publication at Haskell '14. "
+            H.em " In Proceedings of the 2014 ACM SIGPLAN symposium on Haskell. "
             "2014."
         H.li $ do
             "N. Vazou, E. L. Seidel, R. Jhala, D. Vytiniotis, and S. Peyton-Jones. "
             H.a ! A.href "/pub/haskellrefinements-icfp14.pdf" $
                 "Refinement Types for Haskell."
-            H.em " Accepted for publication at ICFP '14. "
+            H.em " In Proceedings of the 19th ACM SIGPLAN international conference on Functional programming. "
             "2014."
         H.li $ do
             "E. L. Seidel. "
