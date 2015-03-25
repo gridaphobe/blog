@@ -2,13 +2,13 @@ Name:                blog
 Version:             0.1
 Synopsis:            Project Synopsis Here
 Description:         Project Description Here
-License:             AllRightsReserved
+License:             BSD3
 Author:              Eric Seidel
 Maintainer:          gridaphobe@gmail.com
 Stability:           Experimental
 Category:            Web
 Build-type:          Simple
-Cabal-version:       >=1.2
+Cabal-version:       >=1.10
 
 Flag development
   Description: Whether to build the server in development (interpreted) mode
@@ -20,24 +20,24 @@ Executable blog
 
   Build-depends:
     base >= 4 && < 5,
-    blaze-html == 0.6.*,
-    blaze-markup == 0.5.*,
-    containers == 0.5.*,
-    css == 0.1,
-    directory == 1.2.*,
-    filepath == 1.3.*,
-    highlighting-kate == 0.5.*,
-    mtl >= 2 && < 3,
-    old-locale == 1.0.*,
-    pandoc == 1.12.*,
-    pandoc-types == 1.12.*,
-    scotty == 0.5.*,
-    text >= 0.11 && < 0.12,
-    time >= 1.1 && < 1.5,
-    transformers == 0.3.*,
-    unix >= 2.6,
-    wai-extra == 1.3.*,
-    wai-middleware-static == 0.3.*
+    blaze-html,
+    blaze-markup,
+    containers,
+    css,
+    directory,
+    filepath,
+    highlighting-kate,
+    mtl,
+    old-locale,
+    pandoc,
+    pandoc-types,
+    scotty,
+    text,
+    time,
+    transformers,
+    unix,
+    wai-extra,
+    wai-middleware-static
 
   if flag(development)
     ghc-options: -threaded -w

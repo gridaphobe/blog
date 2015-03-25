@@ -12,7 +12,7 @@ import           System.Directory
 import           System.FilePath
 import           System.Posix.Env
 import           Web.Scotty hiding (next)
-import           Web.Scotty.Trans (ActionT, next)
+import           Web.Scotty.Trans (ActionT, next, ScottyError)
 
 import           Post
 import qualified View                        as V
@@ -83,6 +83,6 @@ lookupM k m = case M.lookup k m of
                 Nothing -> mzero
                 Just v  -> return v
 
-instance (MonadPlus m) => MonadPlus (ActionT m) where
+instance (ScottyError e, MonadPlus m) => MonadPlus (ActionT e m) where
     mzero = next
     a `mplus` b = a `catchError` \_ -> b
