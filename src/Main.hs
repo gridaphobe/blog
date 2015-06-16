@@ -1,15 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
+import           Control.Applicative
 import           Control.Monad
 import           Control.Monad.Error
-import           Control.Monad.IO.Class
 import qualified Data.Map                    as M
 import qualified Data.Text.Lazy              as T
 import           Network.Wai.Middleware.RequestLogger
 import           Network.Wai.Middleware.Static
 import           System.Directory
-import           System.FilePath
 import           System.Posix.Env
 import           Web.Scotty hiding (next)
 import           Web.Scotty.Trans (ActionT, next, ScottyError)
@@ -83,6 +82,8 @@ lookupM k m = case M.lookup k m of
                 Nothing -> mzero
                 Just v  -> return v
 
+instance (ScottyError e, Alternative m, Monad m) => Alternative (ActionT e m) where
+    empty = next
+    a <|> b = a `catchError` \_ -> b
+
 instance (ScottyError e, MonadPlus m) => MonadPlus (ActionT e m) where
-    mzero = next
-    a `mplus` b = a `catchError` \_ -> b

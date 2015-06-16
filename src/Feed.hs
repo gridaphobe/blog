@@ -3,7 +3,6 @@ module Feed (feed) where
 
 import           Data.Monoid
 import           Data.Time.Format
-import           System.Locale
 import           Text.Blaze
 import           Text.Blaze.Html5 (Html, toHtml)
 import           Text.Blaze.Html5.Attributes (rel, href)

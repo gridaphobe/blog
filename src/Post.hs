@@ -20,7 +20,6 @@ import           Data.Time.Clock              (UTCTime)
 import           Data.Time.Format
 import           System.Directory
 import           System.FilePath
-import           System.Locale
 import           Text.Blaze.Html5             (Html)
 import           Text.Highlighting.Kate.Styles
 import           Text.Pandoc hiding (Format)
@@ -58,7 +57,7 @@ loadPosts dir = do
 
 loadPost :: FilePath -> IO Post
 loadPost path = do
-    p@(Pandoc m _) <- readMarkdown readerOptions <$> readFile path
+    Right p@(Pandoc m _) <- readMarkdown readerOptions <$> readFile path
     return Post { title   = T.pack $ stringify $ docTitle m
                 , slug    = T.pack $ takeBaseName path
                 , content = writeHtml writerOptions p

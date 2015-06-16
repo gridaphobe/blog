@@ -1,13 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module View  where
+module View where
 
 import           Data.Monoid
+import           Data.List
 import           Data.Text                   (Text)
 import qualified Data.Text.Lazy              as L
 import           Data.Time.Format
-import qualified Language.CSS                as C
-import           System.Locale
+import qualified Clay                        as C
 import           Text.Blaze.Internal         (preEscapedText)
 import           Text.Blaze.Html5            (Html, (!))
 import qualified Text.Blaze.Html5            as H
@@ -29,14 +29,14 @@ index ps =
               ! A.src "/img/eric.jpg"
         H.h1 "Eric Seidel"
         H.p $ do
-            "I'm Eric Seidel. I am a third-year PhD student in Computer Science at "
+            "I'm a third-year PhD student in Computer Science at "
             H.a ! A.href "http://cs.ucsd.edu" $ "UC San Diego"
             ". Here you'll find a "
             "collection of thoughts, a list of current and past projects, "
             "and a list of publications."
         H.p $ do
             "If you want to get in touch, you can reach me at "
-            H.a ! A.href "mailto:gridaphobe@gmail.com" $ "gridaphobe@gmail.com"
+            H.a ! A.href "mailto:blog@eric.seidel.io" $ "eric@seidel.io"
             " or "
             H.a ! A.href "http://twitter.com/gridaphobe" $ "@gridaphobe"
             " on Twitter."
@@ -79,76 +79,73 @@ renderPostLinks ps = do
 post :: Post -> L.Text
 post p = layout (P.title p) (renderPost p)
 
+mkPublication :: Html -> H.AttributeValue -> Html -> [Html] -> Html
+mkPublication title pdf venue authors = H.li $ do
+  H.a ! A.href pdf $ title
+  preEscapedText " &mdash; "
+  venue
+  H.br
+  foldr1 (>>) $ intersperse ", " authors
+
+me = H.b "Eric L. Seidel"
 
 publications :: L.Text
 publications = layout "Eric Seidel" $ do
     H.h1 "Publications"
-    H.h3 "Papers"
-    H.ul $ do
-        H.li $ do
-            "E. L. Seidel, N. Vazou, and R. Jhala. "
-            H.a ! A.href "/pub/target-esop15.pdf" $
-                "Type Targeted Testing."
-            H.em " Accepted for publication in ESOP '15. "
-            "2015."
-        H.li $ do
-            "N. Vazou, E. L. Seidel, and R. Jhala. "
-            H.a ! A.href "/pub/realworldliquid-haskell14.pdf" $
-                "LiquidHaskell: Experience with Refinement Types in the Real World."
-            H.em " In Proceedings of the 2014 ACM SIGPLAN symposium on Haskell. "
-            "2014."
-        H.li $ do
-            "N. Vazou, E. L. Seidel, R. Jhala, D. Vytiniotis, and S. Peyton-Jones. "
-            H.a ! A.href "/pub/haskellrefinements-icfp14.pdf" $
-                "Refinement Types for Haskell."
-            H.em " In Proceedings of the 19th ACM SIGPLAN international conference on Functional programming. "
-            "2014."
-        H.li $ do
-            "E. L. Seidel. "
-            H.a ! A.href "/pub/fluidinfo-bwupep11.pdf" $
-                "Metadata Management in Scientific Computing."
-            H.em " Journal of Computational Science Education 3 (2). "
-            "2012."
-        H.li $ do
-            "W. L. Khoo, E. L. Seidel, and Z. Zhu. "
-            H.a ! A.href "/pub/virtualenv-icchp12.pdf" $
-                "Designing a Virtual Environment to Evaluate Multimodal Sensors for Assisting the Visually Impaired."
-            H.em " In Proceedings of the 13th Iternational Conference on Computers Helping People with Special Needs (2). "
-            "2012."
-        H.li $ do
-            "G. Allen, T. Goodale, F. Löffler, D. Rideout, E. Schnetter, "
-            "and E. L. Seidel. "
-            H.a ! A.href "/pub/ccl-cbhpc10.pdf" $
-                "Component Specification in the Cactus Framework: The Cactus Configuration Language."
-            H.em " In Proceedings of the 11th IEEE/ACM International Conference on Grid Computing. "
-            "2010."
-        H.li $ do
-            "E. L. Seidel, G. Allen, S. Brandt, F. Löffler, and E. Schnetter. 2010. "
-            H.a ! A.href "/pub/crl-tg10.pdf" $
-                "Simplifying Complex Software Assembly: The Component Retrieval Language and Implementation."
-            H.em " In Proceedings of the 2010 Teragrid Conference. "
-            "2010."
+    -- H.h3 "Papers"
+    H.ul ! A.class_ "pubs" $ do
+        mkPublication "Type Targeted Testing"
+                      "/pub/target-esop15.pdf"
+                      "ESOP 2015"
+                      [ me, "Niki Vazou", "Ranjit Jhala" ]
+        mkPublication "LiquidHaskell: Experience with Refinement Types in the Real World"
+                      "/pub/realworldliquid-haskell14.pdf"
+                      "Haskell 2014"
+                      [ "Niki Vazou", me, "Ranjit Jhala" ]
+        mkPublication "Refinement Types for Haskell"
+                      "/pub/haskellrefinements-icfp14.pdf"
+                      "ICFP 2014"
+                      [ "Niki Vazou", me, "Ranjit Jhala"
+                      , "Dimitrios Vytiniotis", "Simon Peyton-Jones" ]
+        mkPublication "Metadata Management in Scientific Computing"
+                      "/pub/fluidinfo-bwupep11.pdf"
+                      "JOCSE 2012"
+                      [ me ]
+        mkPublication "Designing a Virtual Environment to Evaluate Multimodal Sensors for Assisting the Visually Impaired"
+                      "/pub/virtualenv-icchp12.pdf"
+                      "ICCHP 2012"
+                      [ "Wai L. Khoo", me, "Zhigang Zhu" ]
+        mkPublication "Component Specification in the Cactus Framework: The Cactus Configuration Language"
+                      "/pub/ccl-cbhpc10.pdf"
+                      "GRID 2010"
+                      [ "Gabrielle Allen", "Tom Goodale", "Frank Löffler"
+                      , "David Rideout", "Erik Schnetter", me ]
+        mkPublication "Simplifying Complex Software Assembly: The Component Retrieval Language and Implementation"
+                      "/pub/crl-tg10.pdf"
+                      "TeraGrid 2010"
+                      [ me, "Gabrielle Allen", "Steven Brandt"
+                      , "Frank Löffler", "Erik Schnetter" ]
 
-    H.h3 "Posters"
-    H.ul $ do
-        H.li $ do
-            "E. L. Seidel and G. Allen. "
-            H.a ! A.href "/pub/fluidinfo-poster.pdf" $
-                "Metadata Management in Scientific Computing"
-            ". Presented at TeraGrid '11 in Salt Lake City, UT. 2011."
-        H.li $ do
-            "E. L. Seidel, G. Allen, S. Brandt, F. Löffler, and E. Schnetter. "
-            H.a ! A.href "/pub/crl-poster.pdf" $
-                "Simplifying Complex Software Assembly: The Component Retrieval Language and Implementation"
-            ". Presented at TeraGrid '10 in Pittsburgh, PA. 2010."
-
-    H.h3 "Presentations"
-    H.ul $ do
-        H.li $ do
-            "E. L. Seidel, G. Allen, S. Brandt, F. Löffler, and E. Schnetter. "
-            H.a ! A.href "/pub/crl-presentation.pdf" $
-                "Simplifying Complex Software Assembly: The Component Retrieval Language and Implementation"
-            ". Presented at TeraGrid '10 in Pittsburgh, PA. 2010. "
+--    H.h3 "Posters"
+--    H.ul $ do
+--        H.li $ do
+--            "E. L. Seidel and G. Allen. "
+--            H.a ! A.href "/pub/fluidinfo-poster.pdf" $
+--                "Metadata Management in Scientific Computing"
+--            ". Presented at TeraGrid '11 in Salt Lake City, UT. 2011."
+--        H.li $ do
+--            "E. L. Seidel, G. Allen, S. Brandt, F. Löffler, and E. Schnetter. "
+--            H.a ! A.href "/pub/crl-poster.pdf" $
+--                "Simplifying Complex Software Assembly: The Component Retrieval Language and Implementation"
+--            ". Presented at TeraGrid '10 in Pittsburgh, PA. 2010."
+--
+--    H.h3 "Presentations"
+--    H.ul $ do
+--        H.li $ do
+--            "E. L. Seidel, G. Allen, S. Brandt, F. Löffler, and E. Schnetter. "
+--            H.a ! A.href "/pub/crl-presentation.pdf" $
+--                "Simplifying Complex Software Assembly: The Component Retrieval Language and Implementation"
+--            ". Presented at TeraGrid '10 in Pittsburgh, PA. 2010. "
 
 
 
@@ -199,44 +196,47 @@ layout title body = renderHtml $ H.docTypeHtml $ do
             H.section body
             H.footer ! A.class_ "footer" $ do
                 H.p $ do
-                    preEscapedText "Copyright &copy; Eric Seidel, 2012"
+                    preEscapedText "Copyright &copy; Eric Seidel, 2012 - 2015"
   where
     css href = H.link ! A.href href ! A.type_ "text/css" ! A.rel "stylesheet"
 
 ------------------------------------------------------------------------------
 -- | Extra styling
 style :: L.Text
-style = C.renderCSS $ C.runCSS $ do
-    C.rule ".container" $ do
-        C.width "750px"
-        C.paddingTop "20px"
-    C.rule "a code.url" $ do
+style = C.render $ do
+    ".container" C.? do
+        C.width (C.px 750)
+        C.paddingTop (C.px 20)
+    "a code.url" C.? do
         C.color "#08C"
-    C.rule "h1, h2, h3, h4, h5, h6" $ do
-        C.fontFamily "Ubuntu, sans-serif"
-    C.rule "pre, code" $ do
-        C.fontFamily "Inconsolata, monospace"
-        C.color "black"
-        C.borderStyle "none"
-    C.rule "nav" $ do
-        C.marginLeft "auto"
-        C.marginRight "auto"
-        C.textAlign "center"
-        C.width "auto"
-        C.rule "ul li a" $ do
-            C.fontFamily "Ubuntu, sans-serif"
-            C.color "black"
-    C.rule "footer" $ do
-        C.marginTop "5px"
-        C.borderTop "1px solid #E5E5E5"
-        C.rule "p" $ do
-            C.textAlign "center"
-            C.fontSize "80%"
-    C.rule "section h1" $ do
-        C.marginBottom "15px"
-        C.borderBottom "1px solid #E5E5E5"
-    C.rule ".pull-right" $
-        C.paddingLeft "20px"
+    "h1, h2, h3, h4, h5, h6" C.? do
+        C.fontFamily ["Ubuntu"] [C.sansSerif]
+    "pre, code" C.? do
+        C.fontFamily ["Inconsolata"] [C.monospace]
+        C.color C.black
+        C.borderStyle C.none
+    "nav" C.? do
+        C.marginLeft C.auto
+        C.marginRight C.auto
+        C.textAlign (C.alignSide C.sideCenter)
+        C.width C.auto
+        "ul li a" C.? do
+            C.fontFamily ["Ubuntu"] [C.sansSerif]
+            C.color C.black
+    "footer" C.? do
+        C.marginTop (C.px 5)
+        C.borderTop C.solid (C.px 1) "#E5E5E5"
+        "p" C.? do
+            C.textAlign (C.alignSide C.sideCenter)
+            C.fontSize (C.pct 80)
+    "section h1" C.? do
+        C.marginBottom (C.px 15)
+        C.borderBottom C.solid (C.px 1) "#E5E5E5"
+    ".pull-right" C.?
+        C.paddingLeft (C.px 20)
+    "ul.pubs" C.? C.listStyleType C.none
+    "ul.pubs > li" C.?
+        C.marginBottom (C.em 0.5)
 
 code :: L.Text
 code = L.pack $ styleToCss pygments
