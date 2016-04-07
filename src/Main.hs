@@ -53,8 +53,10 @@ main = do
         get "/publications" $
             html V.publications
 
-        get "/resume" $ redirect "http://fluidcv.com/gridaphobe"
-        get "/cv"     $ redirect "http://fluidcv.com/gridaphobe"
+        get "/resume" $ file "resources/static/Eric_Seidel_Resume.pdf"
+        get "/cv"     $ file "resources/static/Eric_Seidel_Resume.pdf"
+        -- get "/resume" $ redirect "http://fluidcv.com/gridaphobe"
+        -- get "/cv"     $ redirect "http://fluidcv.com/gridaphobe"
 
         notFound $
             html V.notFound
