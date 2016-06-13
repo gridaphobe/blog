@@ -94,6 +94,16 @@ publications = layout "Eric Seidel" $ do
     H.h1 "Publications"
     -- H.h3 "Papers"
     H.ul ! A.class_ "pubs" $ do
+        mkPublication "Dynamic Witnesses for Static Type Errors"
+                      "/pub/nanomaly-icfp16.pdf"
+                      "ICFP 2016 (accepted)"
+                      [ me, "Ranjit Jhala", "Westley Weimer"]
+        mkPublication "Guilt Free Ivory"
+                      "/pub/ivory-haskell15.pdf"
+                      "Haskell 2015"
+                      [ "Trevor Elliott", "Simon Winwood", "James Bielman"
+                      , "Lee Pike", "Pat Hickey", "Jamey Sharp", me
+                      , "John Launchbury"]
         mkPublication "Type Targeted Testing"
                       "/pub/target-esop15.pdf"
                       "ESOP 2015"
