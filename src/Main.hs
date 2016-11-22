@@ -82,6 +82,12 @@ main = do
       route idRoute
       compile $ makeItem $ CopyFile "resources/static/Eric_Seidel_Resume.pdf"
 
+    create ["404.html"] $ do
+      route idRoute
+      compile $ do
+        makeItem (T.unpack V.notFound)
+          >>= relativizeUrls
+
 -- main :: IO ()
 -- main = do
 --     port <- getEnv "PORT"
