@@ -38,7 +38,7 @@ main = do
     create ["css/style.css"] $ do
       route idRoute
       compile $ do
-        makeItem (T.unpack V.code)
+        makeItem (T.unpack V.style)
         >>= relativizeUrls
 
     create ["css/code.css"] $ do
