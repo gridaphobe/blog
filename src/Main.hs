@@ -27,7 +27,7 @@ dropDirectory = joinPath . drop 1 . splitPath
 main :: IO ()
 main = do
   posts <- loadPosts "resources/posts"
-  hakyll $ do
+  hakyllWith (defaultConfiguration {destinationDirectory="docs"}) $ do
     -- Static files
     match ("resources/static/*" .||. "resources/static/css/*" .||.
            "resources/static/img/*" .||. "resources/static/js/*" .||.
