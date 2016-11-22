@@ -29,7 +29,7 @@ index ps =
               ! A.src "/img/eric.jpg"
         H.h1 "Eric Seidel"
         H.p $ do
-            "I'm a third-year PhD student in Computer Science at "
+            "I'm a fifth-year PhD student in Computer Science at "
             H.a ! A.href "http://cs.ucsd.edu" $ "UC San Diego"
             ". Here you'll find a "
             "collection of thoughts, a list of current and past projects, "
@@ -96,7 +96,7 @@ publications = layout "Eric Seidel" $ do
     H.ul ! A.class_ "pubs" $ do
         mkPublication "Dynamic Witnesses for Static Type Errors"
                       "/pub/nanomaly-icfp16.pdf"
-                      "ICFP 2016 (accepted)"
+                      "ICFP 2016"
                       [ me, "Ranjit Jhala", "Westley Weimer"]
         mkPublication "Guilt Free Ivory"
                       "/pub/ivory-haskell15.pdf"
@@ -179,7 +179,7 @@ layout title body = renderHtml $ H.docTypeHtml $ do
         -- H.link ! A.href "http://feeds.feedburner.com/gridaphobe"
         --     ! A.type_ "application/rss+xml" ! A.rel "alternate"
         --     ! A.title "Eric Seidel"
-        H.link ! A.href "/feed" ! A.type_ "application/atom+xml"
+        H.link ! A.href "/feed.xml" ! A.type_ "application/atom+xml"
             ! A.rel "alternate" ! A.title "Eric Seidel"
         css "http://fonts.googleapis.com/css?family=Ubuntu|PT+Serif:400,700,400italic|Inconsolata"
         css "/css/bootstrap.min.css"
@@ -196,17 +196,17 @@ layout title body = renderHtml $ H.docTypeHtml $ do
                         H.a ! A.href "/posts" $ "Archive"
                         H.span ! A.class_ "divider" $ "|"
                     H.li $ do
-                        H.a ! A.href "/projects" $ "Projects"
+                        H.a ! A.href "//gridaphobe.github.io/" $ "Projects"
                         H.span ! A.class_ "divider" $ "|"
                     H.li $ do
                         H.a ! A.href "/publications" $ "Publications"
                         H.span ! A.class_ "divider" $ "|"
                     H.li $ do
-                        H.a ! A.href "/cv" $ "Resumé"
+                        H.a ! A.href "/cv.pdf" $ "Resumé"
             H.section body
             H.footer ! A.class_ "footer" $ do
                 H.p $ do
-                    preEscapedText "Copyright &copy; Eric Seidel, 2012 - 2015"
+                    preEscapedText "Copyright &copy; Eric Seidel, 2012"
   where
     css href = H.link ! A.href href ! A.type_ "text/css" ! A.rel "stylesheet"
 
