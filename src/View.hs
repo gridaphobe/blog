@@ -29,11 +29,9 @@ index ps =
               ! A.src "/img/eric.jpg"
         H.h1 "Eric Seidel"
         H.p $ do
-            "I'm a fifth-year PhD student in Computer Science at "
-            H.a ! A.href "http://cs.ucsd.edu" $ "UC San Diego"
-            ". Here you'll find a "
-            "collection of thoughts, a list of current and past projects, "
-            "and a list of publications."
+            "I'm a software engineer at Bloomberg LP."
+            "Before that, I was a PhD student in Computer Science at UC San Diego."
+            "Here you'll find a collection of thoughts, a list of current and past projects, and a list of publications."
         H.p $ do
             "If you want to get in touch, you can reach me at "
             H.a ! A.href "mailto:blog@eric.seidel.io" $ "eric@seidel.io"
