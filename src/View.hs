@@ -94,6 +94,10 @@ publications = layout "Eric Seidel" $ do
     H.h1 "Publications"
     -- H.h3 "Papers"
     H.ul ! A.class_ "pubs" $ do
+        mkPublication "Learning to Blame"
+                      "/pub/nate-oopsla17.pdf"
+                      "OOPSLA 2017"
+                      [ me, "Huma Sibghat", "Kamalika Chaudhuri", "Westley Weimer", "Ranjit Jhala"]
         mkPublication "Dynamic Witnesses for Static Type Errors"
                       "/pub/nanomaly-icfp16.pdf"
                       "ICFP 2016"
