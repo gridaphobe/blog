@@ -9,3 +9,5 @@ log/*.log
 TAGS
 .cabal-sandbox/
 cabal.sandbox.config
+/.stack-work
+/_cache

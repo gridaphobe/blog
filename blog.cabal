@@ -10,10 +10,6 @@ Category:            Web
 Build-type:          Simple
 Cabal-version:       >=1.10
 
-Flag development
-  Description: Whether to build the server in development (interpreted) mode
-  Default: False
-
 Executable blog
   hs-source-dirs: src
   main-is: Main.hs
@@ -23,24 +19,18 @@ Executable blog
     blaze-html,
     blaze-markup,
     containers,
-    clay < 0.12,
+    clay,
     directory,
     filepath,
     hakyll,
-    highlighting-kate,
     mtl,
     pandoc,
     pandoc-types,
     scotty,
+    skylighting,
     text,
     time,
     transformers,
     unix,
     wai-extra,
     wai-middleware-static
-
-  if flag(development)
-    ghc-options: -threaded -w
-  else
-    ghc-options: -threaded -Wall -fwarn-tabs -funbox-strict-fields -O2
-                 -fno-warn-orphans -fno-warn-unused-do-bind

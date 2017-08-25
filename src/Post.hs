@@ -21,7 +21,7 @@ import           Data.Time.Format
 import           System.Directory
 import           System.FilePath
 import           Text.Blaze.Html5             (Html)
-import           Text.Highlighting.Kate.Styles
+import           Skylighting.Styles
 import           Text.Pandoc hiding (Format)
 import           Text.Pandoc.Shared
 

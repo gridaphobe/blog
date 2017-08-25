@@ -13,8 +13,8 @@ import           Text.Blaze.Html5            (Html, (!))
 import qualified Text.Blaze.Html5            as H
 import qualified Text.Blaze.Html5.Attributes as A
 import           Text.Blaze.Html.Renderer.Text
-import           Text.Highlighting.Kate.Format.HTML
-import           Text.Highlighting.Kate.Styles
+import           Skylighting.Format.HTML
+import           Skylighting.Styles
 
 
 import           Post                        (Post)
@@ -92,6 +92,10 @@ publications = layout "Eric Seidel" $ do
     H.h1 "Publications"
     -- H.h3 "Papers"
     H.ul ! A.class_ "pubs" $ do
+        mkPublication "Data-Driven Techniques for Type Error Diagnosis"
+                      "/pub/seidel-dissertation.pdf"
+                      "PhD Dissertation 2017"
+                      [ me ]
         mkPublication "Learning to Blame"
                       "/pub/nate-oopsla17.pdf"
                       "OOPSLA 2017"

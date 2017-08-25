@@ -47,4 +47,4 @@ name_ = Parent "name" "<name" "</name>"
 email_ = Parent "email" "<email" "</email>"
 
 link_ :: Html
-link_ = Leaf "link" "<link" "/>"
+link_ = Leaf "link" "<link" "/>" ()
