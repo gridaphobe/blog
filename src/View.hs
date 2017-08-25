@@ -29,8 +29,8 @@ index ps =
               ! A.src "/img/eric.jpg"
         H.h1 "Eric Seidel"
         H.p $ do
-            "I'm a software engineer at Bloomberg LP."
-            "Before that, I was a PhD student in Computer Science at UC San Diego."
+            "I'm a software engineer at Bloomberg LP. "
+            "Before that, I was a PhD student in Computer Science at UC San Diego. "
             "Here you'll find a collection of thoughts, a list of current and past projects, and a list of publications."
         H.p $ do
             "If you want to get in touch, you can reach me at "
