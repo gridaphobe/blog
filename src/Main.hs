@@ -88,6 +88,11 @@ main = do
         makeItem (T.unpack V.notFound)
           >>= relativizeUrls
 
+    create ["CNAME"] $ do
+      route idRoute
+      compile $ do
+        makeItem ("eric.seidel.io" :: String)
+
 -- main :: IO ()
 -- main = do
 --     port <- getEnv "PORT"
