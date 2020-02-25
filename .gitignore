@@ -4,6 +4,7 @@ Vagrantfile
 blog.tgz
 cabal-dev
 dist
+dist-newstyle
 log/*.log
 .DS_Store
 TAGS
@@ -11,3 +12,5 @@ TAGS
 cabal.sandbox.config
 /.stack-work
 /_cache
+stack.yaml.lock
+.ghc.environment.*

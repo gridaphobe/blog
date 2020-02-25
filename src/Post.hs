@@ -16,6 +16,8 @@ import qualified Data.Map                     as M
 import qualified Data.Set                     as S
 import           Data.Text                    (Text)
 import qualified Data.Text                    as T
+import qualified Data.Text.Encoding           as T
+import qualified Data.Text.IO                 as T
 import           Data.Time.Clock              (UTCTime)
 import           Data.Time.Format
 import           System.Directory
@@ -56,11 +58,13 @@ loadPosts dir = do
     return $! M.fromList [(T.unpack $ slug p, p) | p <- posts]
 
 loadPost :: FilePath -> IO Post
-loadPost path = do
-    Right p@(Pandoc m _) <- readMarkdown readerOptions <$> readFile path
+loadPost path = runIOorExplode $ do
+    mkd <- readFileStrict path
+    p@(Pandoc m _) <- readMarkdown readerOptions (T.decodeUtf8 mkd)
+    content <- writeHtml5 writerOptions p
     return Post { title   = T.pack $ stringify $ docTitle m
                 , slug    = T.pack $ takeBaseName path
-                , content = writeHtml writerOptions p
+                , content = content
                 , authors = map (T.pack . stringify) $ docAuthors m
                 , date    = readTime defaultTimeLocale fmt $ stringify $ docDate m
                 , format  = f
@@ -72,16 +76,14 @@ loadPost path = do
         ".lhs" -> LHS
         x -> error $ "Unrecognized format: " ++ x
 
-    exts | f == LHS  = S.insert Ext_literate_haskell pandocExtensions
+    exts | f == LHS  = enableExtension Ext_literate_haskell pandocExtensions
          | otherwise = pandocExtensions
 
     readerOptions :: ReaderOptions
     readerOptions = def { readerExtensions = exts }
 
     writerOptions :: WriterOptions
-    writerOptions = def { writerHtml5          = True
-                        , writerHtmlQTags      = True
-                        , writerHighlight      = True
-                        , writerHighlightStyle = pygments
+    writerOptions = def { writerHtmlQTags      = True
+                        , writerHighlightStyle = Just pygments
                         , writerExtensions     = exts
                         }
