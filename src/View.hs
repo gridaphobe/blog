@@ -29,7 +29,7 @@ index ps =
               ! A.src "/img/eric.jpg"
         H.h1 "Eric Seidel"
         H.p $ do
-            "I'm a software engineer at Bloomberg LP. "
+            "I'm a software engineer at Bridgewater Associates. "
             "Before that, I was a PhD student in Computer Science at UC San Diego. "
             "Here you'll find a collection of thoughts, a list of current and past projects, and a list of publications."
         H.p $ do
