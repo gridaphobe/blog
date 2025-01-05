@@ -29,7 +29,7 @@ index ps =
         H.h1 "Eric Seidel"
         H.p $ do
             "I work on Domain-Specific Languages for Economic Modeling at Bridgewater Associates. "
-            "Before that, I worked on Distributed Systems at Bloomberg LP."
+            "Before that, I worked on Distributed Systems at Bloomberg LP. "
             "I have a PhD in Programming Languages from UC San Diego, with a focus on diagnosability of formal methods (e.g. type systems). "
             "Here you'll find a collection of thoughts, a list of current and past projects, and a list of publications."
         H.p $ do
