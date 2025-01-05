@@ -2,7 +2,6 @@
 
 module View where
 
-import           Data.Monoid
 import           Data.List
 import           Data.Text                   (Text)
 import qualified Data.Text.Lazy              as L
@@ -29,15 +28,14 @@ index ps =
               ! A.src "/img/eric.jpg"
         H.h1 "Eric Seidel"
         H.p $ do
-            "I'm a software engineer at Bridgewater Associates. "
-            "Before that, I was a PhD student in Computer Science at UC San Diego. "
+            "I work on Domain-Specific Languages for Economic Modeling at Bridgewater Associates. "
+            "Before that, I worked on Distributed Systems at Bloomberg LP."
+            "I have a PhD in Programming Languages from UC San Diego, with a focus on diagnosability of formal methods (e.g. type systems). "
             "Here you'll find a collection of thoughts, a list of current and past projects, and a list of publications."
         H.p $ do
             "If you want to get in touch, you can reach me at "
             H.a ! A.href "mailto:blog@eric.seidel.io" $ "eric@seidel.io"
-            " or "
-            H.a ! A.href "http://twitter.com/gridaphobe" $ "@gridaphobe"
-            " on Twitter."
+            "."
         H.h3 "Recent Posts"
         renderPostLinks ps
 
@@ -90,7 +88,6 @@ me = H.b "Eric L. Seidel"
 publications :: L.Text
 publications = layout "Eric Seidel" $ do
     H.h1 "Publications"
-    -- H.h3 "Papers"
     H.ul ! A.class_ "pubs" $ do
         mkPublication "Dynamic Witnesses for Static Type Errors (journal extension)"
                       "/pub/nanomaly-jfp.pdf"
@@ -124,7 +121,7 @@ publications = layout "Eric Seidel" $ do
                       [ "Niki Vazou", me, "Ranjit Jhala" ]
         mkPublication "Refinement Types for Haskell"
                       "/pub/haskellrefinements-icfp14.pdf"
-                      "ICFP 2014"
+                      "ICFP 2014 (Awarded Most Influential Paper at ICFP 2024)"
                       [ "Niki Vazou", me, "Ranjit Jhala"
                       , "Dimitrios Vytiniotis", "Simon Peyton-Jones" ]
         mkPublication "Metadata Management in Scientific Computing"
@@ -146,28 +143,6 @@ publications = layout "Eric Seidel" $ do
                       [ me, "Gabrielle Allen", "Steven Brandt"
                       , "Frank Löffler", "Erik Schnetter" ]
 
---    H.h3 "Posters"
---    H.ul $ do
---        H.li $ do
---            "E. L. Seidel and G. Allen. "
---            H.a ! A.href "/pub/fluidinfo-poster.pdf" $
---                "Metadata Management in Scientific Computing"
---            ". Presented at TeraGrid '11 in Salt Lake City, UT. 2011."
---        H.li $ do
---            "E. L. Seidel, G. Allen, S. Brandt, F. Löffler, and E. Schnetter. "
---            H.a ! A.href "/pub/crl-poster.pdf" $
---                "Simplifying Complex Software Assembly: The Component Retrieval Language and Implementation"
---            ". Presented at TeraGrid '10 in Pittsburgh, PA. 2010."
---
---    H.h3 "Presentations"
---    H.ul $ do
---        H.li $ do
---            "E. L. Seidel, G. Allen, S. Brandt, F. Löffler, and E. Schnetter. "
---            H.a ! A.href "/pub/crl-presentation.pdf" $
---                "Simplifying Complex Software Assembly: The Component Retrieval Language and Implementation"
---            ". Presented at TeraGrid '10 in Pittsburgh, PA. 2010. "
-
-
 
 notFound :: L.Text
 notFound = layout "Eric Seidel" $ do
@@ -186,9 +161,6 @@ layout title body = renderHtml $ H.docTypeHtml $ do
             A.content "eric seidel,eric,seidel,eseidel,gridaphobe"
         H.meta ! A.name "icon" ! A.href "/favicon.ico" ! A.type_ "image/x-icon"
         H.title $ H.toHtml title
-        -- H.link ! A.href "http://feeds.feedburner.com/gridaphobe"
-        --     ! A.type_ "application/rss+xml" ! A.rel "alternate"
-        --     ! A.title "Eric Seidel"
         H.link ! A.href "/feed.xml" ! A.type_ "application/atom+xml"
             ! A.rel "alternate" ! A.title "Eric Seidel"
         css "http://fonts.googleapis.com/css?family=Ubuntu|PT+Serif:400,700,400italic|Inconsolata"
@@ -245,13 +217,13 @@ style = C.render $ do
             C.color C.black
     "footer" C.? do
         C.marginTop (C.px 5)
-        C.borderTop C.solid (C.px 1) "#E5E5E5"
+        C.borderTop (C.px 1) C.solid "#E5E5E5"
         "p" C.? do
             C.textAlign (C.alignSide C.sideCenter)
             C.fontSize (C.pct 80)
     "section h1" C.? do
         C.marginBottom (C.px 15)
-        C.borderBottom C.solid (C.px 1) "#E5E5E5"
+        C.borderBottom (C.px 1) C.solid "#E5E5E5"
     ".pull-right" C.?
         C.paddingLeft (C.px 20)
     "ul.pubs" C.? C.listStyleType C.none

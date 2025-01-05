@@ -1,76 +1,76 @@
 <!DOCTYPE HTML>
-<html><head><meta http-equiv="content-type" content="text/html;charset=utf-8"><meta http-equiv="content-language" content="en"><meta name="author" content="Eric Seidel"><meta name="keywords" content="eric seidel,eric,seidel,eseidel,gridaphobe"><meta name="icon" href="../../favicon.ico" type="image/x-icon"><title>(Ab)using Compiler Plugins to Improve Embedded DSLs</title><link href="../../feed.xml" type="application/atom+xml" rel="alternate" title="Eric Seidel"><link href="http://fonts.googleapis.com/css?family=Ubuntu|PT+Serif:400,700,400italic|Inconsolata" type="text/css" rel="stylesheet"><link href="../../css/bootstrap.min.css" type="text/css" rel="stylesheet"><link href="../../css/style.css" type="text/css" rel="stylesheet"><link href="../../css/code.css" type="text/css" rel="stylesheet"></head><body><div class="container"><nav><ul class="breadcrumb"><li><a href="../../">Home</a><span class="divider">|</span></li><li><a href="../../posts">Archive</a><span class="divider">|</span></li><li><a href="//gridaphobe.github.io/">Projects</a><span class="divider">|</span></li><li><a href="../../publications">Publications</a><span class="divider">|</span></li><li><a href="../../cv.pdf">Resumé</a></li></ul></nav><section><h1>(Ab)using Compiler Plugins to Improve Embedded DSLs<small class="pull-right">Posted on December 04, 2014</small></h1><article><p><em>This is cross-posted from the <a href="http://galois.com/blog/2014/12/abusing-compiler-plugins-improve-embedded-dsls/">Galois</a> blog, where I'm currently finishing an internship.</em></p>
-<p>Embedded DSLs are a bit of a double-edged sword. They have a low start-up cost because you can defer a lot of work to the host language, but producing good error messages can be challenging. People often talk about the quality of <em>type errors</em> produced by the host language, but I'm going to focus instead on producing better <em>runtime errors</em>.</p>
+<html><head><meta http-equiv="content-type" content="text/html;charset=utf-8"><meta http-equiv="content-language" content="en"><meta name="author" content="Eric Seidel"><meta name="keywords" content="eric seidel,eric,seidel,eseidel,gridaphobe"><meta name="icon" href="../../favicon.ico" type="image/x-icon"><title>(Ab)using Compiler Plugins to Improve Embedded DSLs</title><link href="../../feed.xml" type="application/atom+xml" rel="alternate" title="Eric Seidel"><link href="http://fonts.googleapis.com/css?family=Ubuntu|PT+Serif:400,700,400italic|Inconsolata" type="text/css" rel="stylesheet"><link href="../../css/bootstrap.min.css" type="text/css" rel="stylesheet"><link href="../../css/style.css" type="text/css" rel="stylesheet"><link href="../../css/code.css" type="text/css" rel="stylesheet"></head><body><div class="container"><nav><ul class="breadcrumb"><li><a href="../../">Home</a><span class="divider">|</span></li><li><a href="../../posts">Archive</a><span class="divider">|</span></li><li><a href="//gridaphobe.github.io/">Projects</a><span class="divider">|</span></li><li><a href="../../publications">Publications</a><span class="divider">|</span></li><li><a href="../../cv.pdf">Resumé</a></li></ul></nav><section><h1>(Ab)using Compiler Plugins to Improve Embedded DSLs<small class="pull-right">Posted on December 04, 2014</small></h1><article><p><em>This is cross-posted from the <a href="http://galois.com/blog/2014/12/abusing-compiler-plugins-improve-embedded-dsls/">Galois</a> blog, where I’m currently finishing an internship.</em></p>
+<p>Embedded DSLs are a bit of a double-edged sword. They have a low start-up cost because you can defer a lot of work to the host language, but producing good error messages can be challenging. People often talk about the quality of <em>type errors</em> produced by the host language, but I’m going to focus instead on producing better <em>runtime errors</em>.</p>
 <h2 id="a-simple-toy-language">A Simple Toy Language</h2>
-<p>Here's a fragment of a simple imperative language.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Lit</span> <span class="fu">=</span> <span class="dt">Integer</span> <span class="dt">Integer</span>
-         <span class="fu">|</span> <span class="dt">Bool</span> <span class="dt">Bool</span>
-         <span class="kw">deriving</span> (<span class="dt">Show</span>)
-
-<span class="kw">data</span> <span class="dt">Expr</span> <span class="fu">=</span> <span class="dt">Var</span> <span class="dt">String</span>
-          <span class="fu">|</span> <span class="dt">Lit</span> <span class="dt">Lit</span>
-          <span class="fu">|</span> <span class="dt">Eq</span> <span class="dt">Expr</span> <span class="dt">Expr</span>
-          <span class="fu">|</span> <span class="dt">Lt</span> <span class="dt">Expr</span> <span class="dt">Expr</span>
-          <span class="fu">|</span> <span class="dt">Add</span> <span class="dt">Expr</span> <span class="dt">Expr</span>
-          <span class="kw">deriving</span> (<span class="dt">Show</span>)
-
-<span class="kw">data</span> <span class="dt">Stmt</span> <span class="fu">=</span> <span class="dt">Assign</span> <span class="dt">String</span> <span class="dt">Expr</span>
-          <span class="fu">|</span> <span class="dt">While</span> <span class="dt">Expr</span> [<span class="dt">Stmt</span>]
-          <span class="fu">|</span> <span class="dt">Assert</span> <span class="dt">Expr</span>
-          <span class="kw">deriving</span> (<span class="dt">Show</span>)</code></pre></div>
+<p>Here’s a fragment of a simple imperative language.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Lit</span> <span class="ot">=</span> <span class="dt">Integer</span> <span class="dt">Integer</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>         <span class="op">|</span> <span class="dt">Bool</span> <span class="dt">Bool</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>         <span class="kw">deriving</span> (<span class="dt">Show</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Expr</span> <span class="ot">=</span> <span class="dt">Var</span> <span class="dt">String</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>          <span class="op">|</span> <span class="dt">Lit</span> <span class="dt">Lit</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>          <span class="op">|</span> <span class="dt">Eq</span> <span class="dt">Expr</span> <span class="dt">Expr</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>          <span class="op">|</span> <span class="dt">Lt</span> <span class="dt">Expr</span> <span class="dt">Expr</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>          <span class="op">|</span> <span class="dt">Add</span> <span class="dt">Expr</span> <span class="dt">Expr</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>          <span class="kw">deriving</span> (<span class="dt">Show</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Stmt</span> <span class="ot">=</span> <span class="dt">Assign</span> <span class="dt">String</span> <span class="dt">Expr</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>          <span class="op">|</span> <span class="dt">While</span> <span class="dt">Expr</span> [<span class="dt">Stmt</span>]</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>          <span class="op">|</span> <span class="dt">Assert</span> <span class="dt">Expr</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>          <span class="kw">deriving</span> (<span class="dt">Show</span>)</span></code></pre></div>
 <p>With judicious use of smart constructors, we can build a nice embedded DSL for our language, turning</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">sum10 ::</span> <span class="dt">Imp</span> ()
-sum10 <span class="fu">=</span> <span class="kw">do</span>
-  n <span class="ot">&lt;-</span> local <span class="dv">0</span>
-  r <span class="ot">&lt;-</span> local <span class="dv">0</span>
-  while (n <span class="fu">&lt;?</span> <span class="dv">11</span>) <span class="fu">$</span> <span class="kw">do</span>
-    r <span class="fu">=:</span> r <span class="fu">+</span> n
-    n <span class="fu">=:</span> n <span class="fu">+</span> <span class="dv">1</span>
-  assert (r <span class="fu">=?</span> <span class="dv">54</span>)</code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ot">sum10 ::</span> <span class="dt">Imp</span> ()</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>sum10 <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> local <span class="dv">0</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> local <span class="dv">0</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  while (n <span class="op">&lt;?</span> <span class="dv">11</span>) <span class="op">$</span> <span class="kw">do</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    r <span class="op">=:</span> r <span class="op">+</span> n</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=:</span> n <span class="op">+</span> <span class="dv">1</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  assert (r <span class="op">=?</span> <span class="dv">54</span>)</span></code></pre></div>
 <p>into</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">λ<span class="fu">&gt;</span> runImp sum10
-[ <span class="dt">Assign</span> <span class="st">&quot;local0&quot;</span> (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">0</span>))
-, <span class="dt">Assign</span> <span class="st">&quot;local1&quot;</span> (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">0</span>))
-, <span class="dt">While</span>
-    (<span class="dt">Lt</span> (<span class="dt">Var</span> <span class="st">&quot;local0&quot;</span>) (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">11</span>)))
-    [ <span class="dt">Assign</span> <span class="st">&quot;local1&quot;</span> (<span class="dt">Add</span> (<span class="dt">Var</span> <span class="st">&quot;local1&quot;</span>) (<span class="dt">Var</span> <span class="st">&quot;local0&quot;</span>))
-    , <span class="dt">Assign</span> <span class="st">&quot;local0&quot;</span> (<span class="dt">Add</span> (<span class="dt">Var</span> <span class="st">&quot;local0&quot;</span>) (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">1</span>)))
-    ]
-, <span class="dt">Assert</span> (<span class="dt">Eq</span> (<span class="dt">Var</span> <span class="st">&quot;local1&quot;</span>) (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">54</span>)))
-]</code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>λ<span class="op">&gt;</span> runImp sum10</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>[ <span class="dt">Assign</span> <span class="st">&quot;local0&quot;</span> (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">0</span>))</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>, <span class="dt">Assign</span> <span class="st">&quot;local1&quot;</span> (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">0</span>))</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>, <span class="dt">While</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    (<span class="dt">Lt</span> (<span class="dt">Var</span> <span class="st">&quot;local0&quot;</span>) (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">11</span>)))</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    [ <span class="dt">Assign</span> <span class="st">&quot;local1&quot;</span> (<span class="dt">Add</span> (<span class="dt">Var</span> <span class="st">&quot;local1&quot;</span>) (<span class="dt">Var</span> <span class="st">&quot;local0&quot;</span>))</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    , <span class="dt">Assign</span> <span class="st">&quot;local0&quot;</span> (<span class="dt">Add</span> (<span class="dt">Var</span> <span class="st">&quot;local0&quot;</span>) (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">1</span>)))</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>, <span class="dt">Assert</span> (<span class="dt">Eq</span> (<span class="dt">Var</span> <span class="st">&quot;local1&quot;</span>) (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">54</span>)))</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>]</span></code></pre></div>
 <p>But when we actually run the program, we get</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">λ<span class="fu">&gt;</span> eval <span class="fu">$</span> runImp sum10
-<span class="fu">***</span> <span class="dt">Exception</span><span class="fu">:</span> assertion failed<span class="fu">:</span> <span class="dt">Eq</span> (<span class="dt">Var</span> <span class="st">&quot;local1&quot;</span>) (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">54</span>))</code></pre></div>
-<p>which is not so great. I like my error messages to include a source location so I know where to start looking. Unfortunately there's no way for a Haskell function to know where it was called, and for good reason as that would destroy purity.</p>
-<p>As an alternative, we could use a pre-processor to transform the original Haskell code by adding explicit references to the source locations. But that's a bit unsatisfactory because now the code we write is no longer the same code GHC sees, which means that errors thrown by GHC will refer to incorrect locations. Luckily for us, GHC includes support for <em>compiler plugins</em> so users can implement their own optimization passes. So, today we're going to implement an optimization pass that optimizes usability rather than performance.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>λ<span class="op">&gt;</span> eval <span class="op">$</span> runImp sum10</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">***</span> <span class="dt">Exception</span><span class="op">:</span> assertion failed<span class="op">:</span> <span class="dt">Eq</span> (<span class="dt">Var</span> <span class="st">&quot;local1&quot;</span>) (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">54</span>))</span></code></pre></div>
+<p>which is not so great. I like my error messages to include a source location so I know where to start looking. Unfortunately there’s no way for a Haskell function to know where it was called, and for good reason as that would destroy purity.</p>
+<p>As an alternative, we could use a pre-processor to transform the original Haskell code by adding explicit references to the source locations. But that’s a bit unsatisfactory because now the code we write is no longer the same code GHC sees, which means that errors thrown by GHC will refer to incorrect locations. Luckily for us, GHC includes support for <em>compiler plugins</em> so users can implement their own optimization passes. So, today we’re going to implement an optimization pass that optimizes usability rather than performance.</p>
 <h2 id="strategy">Strategy</h2>
-<p>GHC allows users to write optimization passes over <a href="https://downloads.haskell.org/~ghc/latest/docs/html/libraries/ghc/CoreSyn.html#t:Expr">Core</a>, the first of a few intermediate representations used by GHC. Core is a simple language with just a handful of data constructors, essentially<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">CoreExpr</span>
-  <span class="fu">=</span> <span class="dt">Var</span>	  <span class="dt">Id</span>
-  <span class="fu">|</span> <span class="dt">Lit</span>   <span class="dt">Literal</span>
-  <span class="fu">|</span> <span class="dt">App</span>   <span class="dt">CoreExpr</span> <span class="dt">CoreExpr</span>
-  <span class="fu">|</span> <span class="dt">Lam</span>   <span class="dt">Id</span> <span class="dt">CoreExpr</span>
-  <span class="fu">|</span> <span class="dt">Let</span>   <span class="dt">CoreBind</span> <span class="dt">CoreExpr</span>
-  <span class="fu">|</span> <span class="dt">Case</span>  <span class="dt">CoreExpr</span> <span class="dt">Id</span> <span class="dt">Type</span> [(<span class="dt">AltCon</span>, [<span class="dt">Id</span>], <span class="dt">CoreExpr</span>)]
-  <span class="fu">|</span> <span class="dt">Type</span>  <span class="dt">Type</span>
-  <span class="fu">|</span> <span class="dt">Tick</span>  <span class="dt">Tickish</span> <span class="dt">CoreExpr</span></code></pre></div>
-<p>This makes our life a whole lot easier since we don't have to consider the entire surface area of Haskell's syntax when we write our plugin.</p>
+<p>GHC allows users to write optimization passes over <a href="https://downloads.haskell.org/~ghc/latest/docs/html/libraries/ghc/CoreSyn.html#t:Expr">Core</a>, the first of a few intermediate representations used by GHC. Core is a simple language with just a handful of data constructors, essentially<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">CoreExpr</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="ot">=</span> <span class="dt">Var</span>	  <span class="dt">Id</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="dt">Lit</span>   <span class="dt">Literal</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="dt">App</span>   <span class="dt">CoreExpr</span> <span class="dt">CoreExpr</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="dt">Lam</span>   <span class="dt">Id</span> <span class="dt">CoreExpr</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="dt">Let</span>   <span class="dt">CoreBind</span> <span class="dt">CoreExpr</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="dt">Case</span>  <span class="dt">CoreExpr</span> <span class="dt">Id</span> <span class="dt">Type</span> [(<span class="dt">AltCon</span>, [<span class="dt">Id</span>], <span class="dt">CoreExpr</span>)]</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="dt">Type</span>  <span class="dt">Type</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="dt">Tick</span>  <span class="dt">Tickish</span> <span class="dt">CoreExpr</span></span></code></pre></div>
+<p>This makes our life a whole lot easier since we don’t have to consider the entire surface area of Haskell’s syntax when we write our plugin.</p>
 <p>Our goal is to write a Core transformation that will insert calls to a <code>setLocation</code> action in our monadic DSL, transforming the original Haskell code into something like</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">sum10 ::</span> <span class="dt">Imp</span> ()
-sum10 <span class="fu">=</span> <span class="kw">do</span>
-  setLocation <span class="fu">&lt;</span>line <span class="dv">3</span><span class="fu">&gt;</span>
-  n <span class="ot">&lt;-</span> local <span class="dv">0</span>
-  setLocation <span class="fu">&lt;</span>line <span class="dv">4</span><span class="fu">&gt;</span>
-  r <span class="ot">&lt;-</span> local <span class="dv">0</span>
-  setLocation <span class="fu">&lt;</span>line <span class="dv">5</span><span class="fu">&gt;</span>
-  while (n <span class="fu">&lt;?</span> <span class="dv">11</span>) <span class="fu">$</span> <span class="kw">do</span>
-    setLocation <span class="fu">&lt;</span>line <span class="dv">6</span><span class="fu">&gt;</span>
-    r <span class="fu">=:</span> r <span class="fu">+</span> n
-    setLocation <span class="fu">&lt;</span>line <span class="dv">7</span><span class="fu">&gt;</span>
-    n <span class="fu">=:</span> n <span class="fu">+</span> <span class="dv">1</span>
-  setLocation <span class="fu">&lt;</span>line <span class="dv">8</span><span class="fu">&gt;</span>
-  assert (r <span class="fu">=?</span> <span class="dv">54</span>)</code></pre></div>
-<p>This isn't perfect as our language will only know about source locations with statement-level granularity, but the upside is that the changes to the language are minimal. We can just add another <code>Stmt</code> constructor that tells the interpreter to update the current location.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ot">sum10 ::</span> <span class="dt">Imp</span> ()</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>sum10 <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  setLocation <span class="op">&lt;</span>line <span class="dv">3</span><span class="op">&gt;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> local <span class="dv">0</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  setLocation <span class="op">&lt;</span>line <span class="dv">4</span><span class="op">&gt;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> local <span class="dv">0</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  setLocation <span class="op">&lt;</span>line <span class="dv">5</span><span class="op">&gt;</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  while (n <span class="op">&lt;?</span> <span class="dv">11</span>) <span class="op">$</span> <span class="kw">do</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    setLocation <span class="op">&lt;</span>line <span class="dv">6</span><span class="op">&gt;</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    r <span class="op">=:</span> r <span class="op">+</span> n</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    setLocation <span class="op">&lt;</span>line <span class="dv">7</span><span class="op">&gt;</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=:</span> n <span class="op">+</span> <span class="dv">1</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  setLocation <span class="op">&lt;</span>line <span class="dv">8</span><span class="op">&gt;</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  assert (r <span class="op">=?</span> <span class="dv">54</span>)</span></code></pre></div>
+<p>This isn’t perfect as our language will only know about source locations with statement-level granularity, but the upside is that the changes to the language are minimal. We can just add another <code>Stmt</code> constructor that tells the interpreter to update the current location.</p>
 <p>To write this transformation we need to know three things:</p>
 <ol type="1">
 <li>Where to insert the annotations?</li>
@@ -78,156 +78,156 @@ sum10 <span class="fu">=</span> <span class="kw">do</span>
 <li>How to get the source locations from GHC?</li>
 </ol>
 <h2 id="useful-api-functions">Useful API Functions</h2>
-<p>GHC is written as a library with a vast API, so let's first pick out and describe a few functions that we'll need to use. I'm going to take some artistic license with the types of these API functions in order to hide some of the necessary plumbing. I will also use angle brackets (e.g. <code>&lt;Imp&gt;</code>) to refer to specific <code>Type</code> and <code>CoreExpr</code> values. A complete and running version of the plugin can be found <a href="https://github.com/GaloisInc/ghc-srcspan-plugin/blob/master/examples/ImpPluginExplicit.hs">here</a>.</p>
+<p>GHC is written as a library with a vast API, so let’s first pick out and describe a few functions that we’ll need to use. I’m going to take some artistic license with the types of these API functions in order to hide some of the necessary plumbing. I will also use angle brackets (e.g. <code>&lt;Imp&gt;</code>) to refer to specific <code>Type</code> and <code>CoreExpr</code> values. A complete and running version of the plugin can be found <a href="https://github.com/GaloisInc/ghc-srcspan-plugin/blob/master/examples/ImpPluginExplicit.hs">here</a>.</p>
 <h3 id="deconstructing-expressions-and-types">Deconstructing Expressions and Types</h3>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">exprType            ::</span> <span class="dt">CoreExpr</span> <span class="ot">-&gt;</span> <span class="dt">Type</span>
-<span class="ot">splitTyConApp_maybe ::</span> <span class="dt">Type</span> <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (<span class="dt">TyCon</span>, [<span class="dt">Type</span>])</code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ot">exprType            ::</span> <span class="dt">CoreExpr</span> <span class="ot">-&gt;</span> <span class="dt">Type</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ot">splitTyConApp_maybe ::</span> <span class="dt">Type</span> <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (<span class="dt">TyCon</span>, [<span class="dt">Type</span>])</span></code></pre></div>
 <p><code>exprType</code> queries an expression for its type. <code>splitTyConApp_maybe</code> attempts to split a type into a type constructor and its arguments, e.g.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">splitTyConApp_maybe <span class="fu">&lt;</span><span class="dt">Imp</span> <span class="dt">String</span><span class="fu">&gt;</span> <span class="fu">=</span> <span class="dt">Just</span> (<span class="fu">&lt;</span><span class="dt">Imp</span><span class="fu">&gt;</span>, [<span class="fu">&lt;</span><span class="dt">String</span><span class="fu">&gt;</span>])</code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>splitTyConApp_maybe <span class="op">&lt;</span><span class="dt">Imp</span> <span class="dt">String</span><span class="op">&gt;</span> <span class="ot">=</span> <span class="dt">Just</span> (<span class="op">&lt;</span><span class="dt">Imp</span><span class="op">&gt;</span>, [<span class="op">&lt;</span><span class="dt">String</span><span class="op">&gt;</span>])</span></code></pre></div>
 <h3 id="building-core-expressions">Building Core Expressions</h3>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">mkCoreApps   ::</span> <span class="dt">CoreExpr</span> <span class="ot">-&gt;</span> [<span class="dt">CoreExpr</span>] <span class="ot">-&gt;</span> <span class="dt">CoreExpr</span>
-<span class="ot">mkStringExpr ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">CoreExpr</span>
-<span class="ot">mkIntExpr    ::</span> <span class="dt">Integer</span> <span class="ot">-&gt;</span> <span class="dt">CoreExpr</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ot">mkCoreApps   ::</span> <span class="dt">CoreExpr</span> <span class="ot">-&gt;</span> [<span class="dt">CoreExpr</span>] <span class="ot">-&gt;</span> <span class="dt">CoreExpr</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ot">mkStringExpr ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">CoreExpr</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="ot">mkIntExpr    ::</span> <span class="dt">Integer</span> <span class="ot">-&gt;</span> <span class="dt">CoreExpr</span></span></code></pre></div>
 <p><code>mkCoreApps</code> constructs a sequence of nested applications, e.g.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">mkCoreApps <span class="fu">&lt;</span>map<span class="fu">&gt;</span> [<span class="fu">&lt;</span>f<span class="fu">&gt;</span>, <span class="fu">&lt;</span>xs<span class="fu">&gt;</span>] <span class="fu">=</span> <span class="dt">App</span> (<span class="dt">App</span> <span class="fu">&lt;</span>map<span class="fu">&gt;</span> <span class="fu">&lt;</span>f<span class="fu">&gt;</span>) <span class="fu">&lt;</span>xs<span class="fu">&gt;</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>mkCoreApps <span class="op">&lt;</span><span class="fu">map</span><span class="op">&gt;</span> [<span class="op">&lt;</span>f<span class="op">&gt;</span>, <span class="op">&lt;</span>xs<span class="op">&gt;</span>] <span class="ot">=</span> <span class="dt">App</span> (<span class="dt">App</span> <span class="op">&lt;</span><span class="fu">map</span><span class="op">&gt;</span> <span class="op">&lt;</span>f<span class="op">&gt;</span>) <span class="op">&lt;</span>xs<span class="op">&gt;</span></span></code></pre></div>
 <p><code>mkStringExpr</code> and <code>mkIntExpr</code> construct expressions corresponding to <code>String</code> (resp. <code>Integer</code>) literals.</p>
 <h3 id="library-functions-from-our-dsl">Library functions from our DSL</h3>
-<p>We'll also need to define two more functions in our DSL for our code-generator to target.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">makeLocation ::</span> FilePath
-             <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="co">-- the starting line/column</span>
-             <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="co">-- the ending line/column</span>
-             <span class="ot">-&gt;</span> <span class="dt">ImpSrcSpan</span>
-<span class="ot">setLocation  ::</span> <span class="dt">ImpSrcSpan</span> <span class="ot">-&gt;</span> <span class="dt">Imp</span> ()</code></pre></div>
+<p>We’ll also need to define two more functions in our DSL for our code-generator to target.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ot">makeLocation ::</span> <span class="dt">FilePath</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>             <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="co">-- the starting line/column</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>             <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="co">-- the ending line/column</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>             <span class="ot">-&gt;</span> <span class="dt">ImpSrcSpan</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="ot">setLocation  ::</span> <span class="dt">ImpSrcSpan</span> <span class="ot">-&gt;</span> <span class="dt">Imp</span> ()</span></code></pre></div>
 <p><code>setLocation</code> just emits a new statement in our DSL that contains the current source location, e.g.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Stmt</span> <span class="fu">=</span> <span class="fu">...</span>
-          <span class="fu">|</span> <span class="dt">SetLocation</span> <span class="dt">ImpSrcSpan</span></code></pre></div>
-<p>I'm also using a new <code>ImpSrcSpan</code> type rather than GHC's <code>SrcSpan</code> to emphasize that we can't just embed the <code>SrcSpan</code> value directly, we have to reconstruct it at run-time.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Stmt</span> <span class="ot">=</span> <span class="op">...</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>          <span class="op">|</span> <span class="dt">SetLocation</span> <span class="dt">ImpSrcSpan</span></span></code></pre></div>
+<p>I’m also using a new <code>ImpSrcSpan</code> type rather than GHC’s <code>SrcSpan</code> to emphasize that we can’t just embed the <code>SrcSpan</code> value directly, we have to reconstruct it at run-time.</p>
 <h2 id="finding-interesting-expressions">Finding interesting expressions</h2>
-<p>Since our goal is locations with statement-level granularity, we'll consider any expression with type <code>Imp a</code> interesting. Encoding this as a predicate on Core expressions is straightforward, we'll just use <code>splitTyConApp_maybe</code> and check if the type constructor is <code>Imp</code>.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">isInteresting ::</span> <span class="dt">CoreExpr</span> <span class="ot">-&gt;</span> <span class="dt">Bool</span>
-isInteresting expr
-  <span class="fu">|</span> <span class="dt">Just</span> (tc, _) <span class="ot">&lt;-</span> splitTyConApp_maybe (exprType expr)
-  <span class="fu">=</span> tc <span class="fu">==</span> <span class="fu">&lt;</span><span class="dt">Imp</span><span class="fu">&gt;</span>
-  <span class="fu">|</span> otherwise
-  <span class="fu">=</span> <span class="dt">False</span></code></pre></div>
+<p>Since our goal is locations with statement-level granularity, we’ll consider any expression with type <code>Imp a</code> interesting. Encoding this as a predicate on Core expressions is straightforward, we’ll just use <code>splitTyConApp_maybe</code> and check if the type constructor is <code>Imp</code>.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ot">isInteresting ::</span> <span class="dt">CoreExpr</span> <span class="ot">-&gt;</span> <span class="dt">Bool</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>isInteresting expr</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="dt">Just</span> (tc, _) <span class="ot">&lt;-</span> splitTyConApp_maybe (exprType expr)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="ot">=</span> tc <span class="op">==</span> <span class="op">&lt;</span><span class="dt">Imp</span><span class="op">&gt;</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="fu">otherwise</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="ot">=</span> <span class="dt">False</span></span></code></pre></div>
 <!-- `splitTyConApp_maybe` attempts to split a `Type` into a pair of a type constructor and its arguments. If it succeeds we just need to check if the type constructor is `Imp`, otherwise we can safely ignore the expression. -->
 <h2 id="adding-the-locations">Adding the locations</h2>
-<p>Once we've found an interesting expression, we'll need to annotate it with a source location according to our scheme above. So we need a function</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">annotate ::</span> <span class="dt">SrcSpan</span> <span class="ot">-&gt;</span> <span class="dt">CoreExpr</span> <span class="ot">-&gt;</span> <span class="dt">CoreExpr</span></code></pre></div>
-<p>that transforms <code>&lt;expr&gt;</code> into <code>(&gt;&gt;) (setLocation &lt;loc&gt;) &lt;expr&gt;</code>. This turns out to be harder than it looks though! Core doesn't have type-classes -- it passes the dictionaries around explicitly -- which means we need to somehow dig up the <code>Monad</code> dictionary for <code>Imp</code>. Rather than deal with looking up type-class dictionaries, let's take a slightly different approach and rewrite <code>&lt;expr&gt;</code> to <code>withLocation &lt;loc&gt; &lt;expr&gt;</code>, where</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">withLocation ::</span> <span class="dt">ImpSrcSpan</span> <span class="ot">-&gt;</span> <span class="dt">Imp</span> a <span class="ot">-&gt;</span> <span class="dt">Imp</span> a</code></pre></div>
+<p>Once we’ve found an interesting expression, we’ll need to annotate it with a source location according to our scheme above. So we need a function</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ot">annotate ::</span> <span class="dt">SrcSpan</span> <span class="ot">-&gt;</span> <span class="dt">CoreExpr</span> <span class="ot">-&gt;</span> <span class="dt">CoreExpr</span></span></code></pre></div>
+<p>that transforms <code>&lt;expr&gt;</code> into <code>(&gt;&gt;) (setLocation &lt;loc&gt;) &lt;expr&gt;</code>. This turns out to be harder than it looks though! Core doesn’t have type-classes – it passes the dictionaries around explicitly – which means we need to somehow dig up the <code>Monad</code> dictionary for <code>Imp</code>. Rather than deal with looking up type-class dictionaries, let’s take a slightly different approach and rewrite <code>&lt;expr&gt;</code> to <code>withLocation &lt;loc&gt; &lt;expr&gt;</code>, where</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ot">withLocation ::</span> <span class="dt">ImpSrcSpan</span> <span class="ot">-&gt;</span> <span class="dt">Imp</span> a <span class="ot">-&gt;</span> <span class="dt">Imp</span> a</span></code></pre></div>
 <p>is a new monadic action in our DSL. Now our target code will look something like</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">sum10 ::</span> <span class="dt">Imp</span> ()
-sum10 <span class="fu">=</span> <span class="kw">do</span>
-  n <span class="ot">&lt;-</span> withLocation <span class="fu">&lt;</span>line <span class="dv">3</span><span class="fu">&gt;</span> (local <span class="dv">0</span>)
-  r <span class="ot">&lt;-</span> withLocation <span class="fu">&lt;</span>line <span class="dv">4</span><span class="fu">&gt;</span> (local <span class="dv">0</span>)
-  withLocation <span class="fu">&lt;</span>line <span class="dv">5</span><span class="fu">&gt;</span> <span class="fu">$</span> while (n <span class="fu">&lt;?</span> <span class="dv">11</span>) <span class="fu">$</span> <span class="kw">do</span>
-    r <span class="fu">=:</span> withLocation <span class="fu">&lt;</span>line <span class="dv">6</span><span class="fu">&gt;</span> (r <span class="fu">+</span> n)
-    n <span class="fu">=:</span> withLocation <span class="fu">&lt;</span>line <span class="dv">7</span><span class="fu">&gt;</span> (n <span class="fu">+</span> <span class="dv">1</span>)
-  withLocation <span class="fu">&lt;</span>line <span class="dv">8</span><span class="fu">&gt;</span> (assert (r <span class="fu">=?</span> <span class="dv">54</span>))</code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ot">sum10 ::</span> <span class="dt">Imp</span> ()</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>sum10 <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> withLocation <span class="op">&lt;</span>line <span class="dv">3</span><span class="op">&gt;</span> (local <span class="dv">0</span>)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> withLocation <span class="op">&lt;</span>line <span class="dv">4</span><span class="op">&gt;</span> (local <span class="dv">0</span>)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  withLocation <span class="op">&lt;</span>line <span class="dv">5</span><span class="op">&gt;</span> <span class="op">$</span> while (n <span class="op">&lt;?</span> <span class="dv">11</span>) <span class="op">$</span> <span class="kw">do</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    r <span class="op">=:</span> withLocation <span class="op">&lt;</span>line <span class="dv">6</span><span class="op">&gt;</span> (r <span class="op">+</span> n)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=:</span> withLocation <span class="op">&lt;</span>line <span class="dv">7</span><span class="op">&gt;</span> (n <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  withLocation <span class="op">&lt;</span>line <span class="dv">8</span><span class="op">&gt;</span> (assert (r <span class="op">=?</span> <span class="dv">54</span>))</span></code></pre></div>
 <!-- The next problem is that we can't simply embed the `SrcSpan` that GHC is carrying around into the Core as a literal. We have to instead translate the `SrcSpan` into a `CoreExpr` ourselves. We'll add another function to our DSL -->
 <!-- ```haskell -->
 <!-- ``` -->
 <!-- and write a function to translate a `SrcSpan` into a `CoreExpr` that corresponds to an application of `makeLocation` to the components of the `SrcSpan`. -->
-<p>As mentioned above, we can't just embed a <code>SrcSpan</code> in the Core, so we'll define a quick helper function that will build a call to <code>makeLocation</code>.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">mkLocExpr ::</span> <span class="dt">SrcSpan</span> <span class="ot">-&gt;</span> <span class="dt">CoreExpr</span>
-mkLocExpr src <span class="fu">=</span>
-  mkCoreApps (<span class="dt">Var</span> <span class="fu">&lt;</span>makeLocation<span class="fu">&gt;</span>)
-             [ mkStringExpr (srcSpanFile src)
-             , mkIntExpr (srcSpanStartLine src)
-             , mkIntExpr (srcSpanStartCol src)
-             , mkIntExpr (srcSpanEndLine src)
-             , mkIntExpr (srcSpanEndCol src)
-             ]</code></pre></div>
+<p>As mentioned above, we can’t just embed a <code>SrcSpan</code> in the Core, so we’ll define a quick helper function that will build a call to <code>makeLocation</code>.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="ot">mkLocExpr ::</span> <span class="dt">SrcSpan</span> <span class="ot">-&gt;</span> <span class="dt">CoreExpr</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>mkLocExpr src <span class="ot">=</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  mkCoreApps (<span class="dt">Var</span> <span class="op">&lt;</span>makeLocation<span class="op">&gt;</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>             [ mkStringExpr (srcSpanFile src)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>             , mkIntExpr (srcSpanStartLine src)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>             , mkIntExpr (srcSpanStartCol src)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>             , mkIntExpr (srcSpanEndLine src)</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>             , mkIntExpr (srcSpanEndCol src)</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>             ]</span></code></pre></div>
 <!-- Core is explicitly typed, so we have to instantiate `withLocation`s type parameter ourselves based on `expr`s type. -->
 <p>Core is explicitly typed, so when we generate the call to <code>withLocation</code> inside <code>annotate</code>, we have to take care to instantiate <code>withLocation</code>s type parameter correctly.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">annotate ::</span> <span class="dt">SrcSpan</span> <span class="ot">-&gt;</span> <span class="dt">CoreExpr</span> <span class="ot">-&gt;</span> <span class="dt">CoreExpr</span>
-annotate src expr <span class="fu">=</span>
-  mkCoreApps (<span class="dt">Var</span> <span class="fu">&lt;</span>withLocation<span class="fu">&gt;</span>) <span class="fu">$</span> map <span class="dt">Type</span> tys <span class="fu">++</span> [mkLocExpr src, expr]
-  <span class="kw">where</span>
-  <span class="dt">Just</span> (_, tys) <span class="fu">=</span> splitTyConApp_maybe <span class="fu">$</span> exprType expr</code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="ot">annotate ::</span> <span class="dt">SrcSpan</span> <span class="ot">-&gt;</span> <span class="dt">CoreExpr</span> <span class="ot">-&gt;</span> <span class="dt">CoreExpr</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>annotate src expr <span class="ot">=</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  mkCoreApps (<span class="dt">Var</span> <span class="op">&lt;</span>withLocation<span class="op">&gt;</span>) <span class="op">$</span> <span class="fu">map</span> <span class="dt">Type</span> tys <span class="op">++</span> [mkLocExpr src, expr]</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">where</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Just</span> (_, tys) <span class="ot">=</span> splitTyConApp_maybe <span class="op">$</span> exprType expr</span></code></pre></div>
 <h2 id="getting-the-locations">Getting the locations</h2>
-<p>I've ignored a somewhat crucial detail so far: GHC strips away the source locations as part of the translation from Haskell to Core! Well, it normally does that anyway... If you load your module into GHCi, or compile with profiling or hpc enabled, GHC will insert <code>Tick</code>s in the Core, which contain source locations among other things.</p>
+<p>I’ve ignored a somewhat crucial detail so far: GHC strips away the source locations as part of the translation from Haskell to Core! Well, it normally does that anyway… If you load your module into GHCi, or compile with profiling or hpc enabled, GHC will insert <code>Tick</code>s in the Core, which contain source locations among other things.</p>
 <p>So we need a function</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">tickSpan ::</span> <span class="dt">Tickish</span> <span class="dt">Id</span> <span class="ot">-&gt;</span> <span class="dt">SrcSpan</span></code></pre></div>
-<p>to extract the <code>SrcSpan</code>. I won't present the implementation here because, frankly, it's just a bunch of plumbing.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ot">tickSpan ::</span> <span class="dt">Tickish</span> <span class="dt">Id</span> <span class="ot">-&gt;</span> <span class="dt">SrcSpan</span></span></code></pre></div>
+<p>to extract the <code>SrcSpan</code>. I won’t present the implementation here because, frankly, it’s just a bunch of plumbing.</p>
 <h2 id="tying-it-all-together">Tying it all together</h2>
 <p>The last piece of the puzzle is the actual expression transformer, which just needs to traverse the <code>CoreExpr</code>s, track the most recent valid <code>SrcSpan</code>, and annotate the interesting expressions.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">addLocationsExpr ::</span> <span class="dt">CoreExpr</span> <span class="ot">-&gt;</span> <span class="dt">CoreExpr</span>
-addLocationsExpr <span class="fu">=</span> go noSrcSpan
-  <span class="kw">where</span>
-  go ss (<span class="dt">Tick</span> t expr) 
-    <span class="fu">|</span> isGoodSrcSpan (tickSpan t)
-    <span class="fu">=</span> <span class="dt">Tick</span> t (go (tickSpan t) expr)
-    <span class="fu">|</span> otherwise
-    <span class="fu">=</span> <span class="dt">Tick</span> t (go ss expr)
-  go ss e<span class="fu">@</span>(<span class="dt">App</span> expr arg) 
-    <span class="fu">|</span> isInteresting e
-    <span class="fu">=</span> annotate ss (<span class="dt">App</span> (go ss expr) (go ss arg))
-    <span class="fu">|</span> otherwise
-    <span class="fu">=</span> <span class="dt">App</span> (go ss expr) (go ss arg)
-  go ss (<span class="dt">Lam</span> x expr)
-    <span class="fu">=</span> <span class="dt">Lam</span> x (go ss expr)
-  go ss (<span class="dt">Let</span> bndr expr)
-    <span class="fu">=</span> <span class="dt">Let</span> (addLocationsBind bndr) (go ss expr)
-  go ss (<span class="dt">Case</span> expr x t alts)
-    <span class="fu">=</span> <span class="dt">Case</span> (go ss expr) x t (mapM (addLocationsAlt ss) alts)
-  go _  expr
-    <span class="fu">=</span> expr
-
-  addLocationsAlt ss (c, xs, expr)
-    <span class="fu">=</span> (c, xs, go ss expr)
-
-<span class="ot">addLocationsBind ::</span> <span class="dt">CoreBind</span> <span class="ot">-&gt;</span> <span class="dt">CoreBind</span>
-addLocationsBind (<span class="dt">NonRec</span> b expr)
-  <span class="fu">=</span> <span class="dt">NonRec</span> b (addLocationsExpr expr)
-addLocationsBind (<span class="dt">Rec</span> binds)
-  <span class="fu">=</span> <span class="dt">Rec</span> [(b, addLocationsExpr expr) <span class="fu">|</span> (b, expr) <span class="ot">&lt;-</span> binds]</code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="ot">addLocationsExpr ::</span> <span class="dt">CoreExpr</span> <span class="ot">-&gt;</span> <span class="dt">CoreExpr</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>addLocationsExpr <span class="ot">=</span> go noSrcSpan</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">where</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  go ss (<span class="dt">Tick</span> t expr) </span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> isGoodSrcSpan (tickSpan t)</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    <span class="ot">=</span> <span class="dt">Tick</span> t (go (tickSpan t) expr)</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="fu">otherwise</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>    <span class="ot">=</span> <span class="dt">Tick</span> t (go ss expr)</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>  go ss e<span class="op">@</span>(<span class="dt">App</span> expr arg) </span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> isInteresting e</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>    <span class="ot">=</span> annotate ss (<span class="dt">App</span> (go ss expr) (go ss arg))</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> <span class="fu">otherwise</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    <span class="ot">=</span> <span class="dt">App</span> (go ss expr) (go ss arg)</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>  go ss (<span class="dt">Lam</span> x expr)</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>    <span class="ot">=</span> <span class="dt">Lam</span> x (go ss expr)</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>  go ss (<span class="dt">Let</span> bndr expr)</span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>    <span class="ot">=</span> <span class="dt">Let</span> (addLocationsBind bndr) (go ss expr)</span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>  go ss (<span class="dt">Case</span> expr x t alts)</span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>    <span class="ot">=</span> <span class="dt">Case</span> (go ss expr) x t (<span class="fu">mapM</span> (addLocationsAlt ss) alts)</span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>  go _  expr</span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>    <span class="ot">=</span> expr</span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>  addLocationsAlt ss (c, xs, expr)</span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>    <span class="ot">=</span> (c, xs, go ss expr)</span>
+<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a><span class="ot">addLocationsBind ::</span> <span class="dt">CoreBind</span> <span class="ot">-&gt;</span> <span class="dt">CoreBind</span></span>
+<span id="cb20-27"><a href="#cb20-27" aria-hidden="true" tabindex="-1"></a>addLocationsBind (<span class="dt">NonRec</span> b expr)</span>
+<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a>  <span class="ot">=</span> <span class="dt">NonRec</span> b (addLocationsExpr expr)</span>
+<span id="cb20-29"><a href="#cb20-29" aria-hidden="true" tabindex="-1"></a>addLocationsBind (<span class="dt">Rec</span> binds)</span>
+<span id="cb20-30"><a href="#cb20-30" aria-hidden="true" tabindex="-1"></a>  <span class="ot">=</span> <span class="dt">Rec</span> [(b, addLocationsExpr expr) <span class="op">|</span> (b, expr) <span class="ot">&lt;-</span> binds]</span></code></pre></div>
 <p>We can hook our pass into GHC as a plugin with the following wrapper</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">module</span> <span class="dt">ImpPlugin</span> <span class="kw">where</span>
-
-<span class="kw">import </span><span class="dt">GhcPlugins</span>
-<span class="kw">import </span><span class="dt">Imp</span>
-
-<span class="ot">plugin ::</span> <span class="dt">Plugin</span>
-plugin <span class="fu">=</span> defaultPlugin { installCoreToDos <span class="fu">=</span> install }
-
-<span class="ot">install ::</span> [<span class="dt">CommandLineOption</span>] <span class="ot">-&gt;</span> [<span class="dt">CoreToDo</span>] <span class="ot">-&gt;</span> <span class="dt">CoreM</span> [<span class="dt">CoreToDo</span>]
-install opts todos <span class="fu">=</span> <span class="kw">do</span>
-  reinitializeGlobals   <span class="co">-- GHC requires it, just do it</span>
-  <span class="kw">let</span> mypass <span class="fu">=</span> <span class="dt">CoreDoPluginPass</span> <span class="st">&quot;Add Locations&quot;</span>
-               (bindsOnlyPass (return <span class="fu">.</span> map addLocationsBind))
-  return mypass <span class="fu">:</span> todos</code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> <span class="dt">ImpPlugin</span> <span class="kw">where</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">GhcPlugins</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Imp</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="ot">plugin ::</span> <span class="dt">Plugin</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>plugin <span class="ot">=</span> defaultPlugin { installCoreToDos <span class="ot">=</span> install }</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="ot">install ::</span> [<span class="dt">CommandLineOption</span>] <span class="ot">-&gt;</span> [<span class="dt">CoreToDo</span>] <span class="ot">-&gt;</span> <span class="dt">CoreM</span> [<span class="dt">CoreToDo</span>]</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>install opts todos <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>  reinitializeGlobals   <span class="co">-- GHC requires it, just do it</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> mypass <span class="ot">=</span> <span class="dt">CoreDoPluginPass</span> <span class="st">&quot;Add Locations&quot;</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>               (bindsOnlyPass (<span class="fu">return</span> <span class="op">.</span> <span class="fu">map</span> addLocationsBind))</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span> mypass <span class="op">:</span> todos</span></code></pre></div>
 <p>and enable it at compile-time with <code>-fplugin=ImpPlugin</code>. Here are the results of all our hard work</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">λ<span class="fu">&gt;</span> runImp sum10
-[ <span class="dt">SetLocation</span> <span class="st">&quot;ImpDemo.hs:(9,9)-(17,19)&quot;</span>
-, <span class="dt">SetLocation</span> <span class="st">&quot;ImpDemo.hs:(12,3)-(12,9)&quot;</span>
-, <span class="dt">Assign</span> <span class="st">&quot;local0&quot;</span> (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">0</span>))
-, <span class="dt">SetLocation</span> <span class="st">&quot;ImpDemo.hs:(9,9)-(17,19)&quot;</span>
-, <span class="dt">SetLocation</span> <span class="st">&quot;ImpDemo.hs:(13,3)-(13,9)&quot;</span>
-, <span class="dt">Assign</span> <span class="st">&quot;local1&quot;</span> (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">0</span>))
-, <span class="dt">SetLocation</span> <span class="st">&quot;ImpDemo.hs:(9,9)-(17,19)&quot;</span>
-, <span class="dt">SetLocation</span> <span class="st">&quot;ImpDemo.hs:(14,3)-(16,15)&quot;</span>
-, <span class="dt">While</span>
-    (<span class="dt">Lt</span> (<span class="dt">Var</span> <span class="st">&quot;local0&quot;</span>) (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">11</span>)))
-    [ <span class="dt">SetLocation</span> <span class="st">&quot;ImpDemo.hs:(14,3)-(16,15)&quot;</span>
-    , <span class="dt">SetLocation</span> <span class="st">&quot;ImpDemo.hs:(15,5)-(15,15)&quot;</span>
-    , <span class="dt">Assign</span> <span class="st">&quot;local1&quot;</span> (<span class="dt">Add</span> (<span class="dt">Var</span> <span class="st">&quot;local1&quot;</span>) (<span class="dt">Var</span> <span class="st">&quot;local0&quot;</span>))
-    , <span class="dt">SetLocation</span> <span class="st">&quot;ImpDemo.hs:(16,5)-(16,15)&quot;</span>
-    , <span class="dt">Assign</span> <span class="st">&quot;local0&quot;</span> (<span class="dt">Add</span> (<span class="dt">Var</span> <span class="st">&quot;local0&quot;</span>) (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">1</span>)))
-    ]
-, <span class="dt">SetLocation</span> <span class="st">&quot;ImpDemo.hs:(17,3)-(17,19)&quot;</span>
-, <span class="dt">Assert</span> (<span class="dt">Eq</span> (<span class="dt">Var</span> <span class="st">&quot;local1&quot;</span>) (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">54</span>)))
-]
-
-λ<span class="fu">&gt;</span> eval <span class="fu">$</span> runImp sum10
-<span class="fu">***</span> <span class="dt">Exception</span><span class="fu">:</span> <span class="st">&quot;ImpDemo.hs:(17,3)-(17,19)&quot;</span><span class="fu">:</span> assertion failed<span class="fu">:</span> <span class="dt">Eq</span> (<span class="dt">Var</span> <span class="st">&quot;local1&quot;</span>) (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">54</span>))</code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>λ<span class="op">&gt;</span> runImp sum10</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>[ <span class="dt">SetLocation</span> <span class="st">&quot;ImpDemo.hs:(9,9)-(17,19)&quot;</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>, <span class="dt">SetLocation</span> <span class="st">&quot;ImpDemo.hs:(12,3)-(12,9)&quot;</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>, <span class="dt">Assign</span> <span class="st">&quot;local0&quot;</span> (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">0</span>))</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>, <span class="dt">SetLocation</span> <span class="st">&quot;ImpDemo.hs:(9,9)-(17,19)&quot;</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>, <span class="dt">SetLocation</span> <span class="st">&quot;ImpDemo.hs:(13,3)-(13,9)&quot;</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>, <span class="dt">Assign</span> <span class="st">&quot;local1&quot;</span> (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">0</span>))</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>, <span class="dt">SetLocation</span> <span class="st">&quot;ImpDemo.hs:(9,9)-(17,19)&quot;</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>, <span class="dt">SetLocation</span> <span class="st">&quot;ImpDemo.hs:(14,3)-(16,15)&quot;</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>, <span class="dt">While</span></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>    (<span class="dt">Lt</span> (<span class="dt">Var</span> <span class="st">&quot;local0&quot;</span>) (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">11</span>)))</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>    [ <span class="dt">SetLocation</span> <span class="st">&quot;ImpDemo.hs:(14,3)-(16,15)&quot;</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>    , <span class="dt">SetLocation</span> <span class="st">&quot;ImpDemo.hs:(15,5)-(15,15)&quot;</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>    , <span class="dt">Assign</span> <span class="st">&quot;local1&quot;</span> (<span class="dt">Add</span> (<span class="dt">Var</span> <span class="st">&quot;local1&quot;</span>) (<span class="dt">Var</span> <span class="st">&quot;local0&quot;</span>))</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>    , <span class="dt">SetLocation</span> <span class="st">&quot;ImpDemo.hs:(16,5)-(16,15)&quot;</span></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>    , <span class="dt">Assign</span> <span class="st">&quot;local0&quot;</span> (<span class="dt">Add</span> (<span class="dt">Var</span> <span class="st">&quot;local0&quot;</span>) (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">1</span>)))</span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>, <span class="dt">SetLocation</span> <span class="st">&quot;ImpDemo.hs:(17,3)-(17,19)&quot;</span></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>, <span class="dt">Assert</span> (<span class="dt">Eq</span> (<span class="dt">Var</span> <span class="st">&quot;local1&quot;</span>) (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">54</span>)))</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>λ<span class="op">&gt;</span> eval <span class="op">$</span> runImp sum10</span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a><span class="op">***</span> <span class="dt">Exception</span><span class="op">:</span> <span class="st">&quot;ImpDemo.hs:(17,3)-(17,19)&quot;</span><span class="op">:</span> assertion failed<span class="op">:</span> <span class="dt">Eq</span> (<span class="dt">Var</span> <span class="st">&quot;local1&quot;</span>) (<span class="dt">Lit</span> (<span class="dt">Integer</span> <span class="dv">54</span>))</span></code></pre></div>
 <p>Wonderful!</p>
-<p>You may have noticed that the only pieces of the plugin that were actually specific to <code>Imp</code> were finding interesting expressions and annotating them with source locations. So I've extracted the rest into a generic <a href="http://hackage.haskell.org/package/ghc-srcspan-plugin">pass</a> that you can re-use. In fact we're already using this plugin in the <a href="https://github.com/GaloisInc/ivory/blob/master/ivory/src/Ivory/Language/Plugin.hs">Ivory</a> language for writing safe embedded systems.</p>
-<p>As a final note, I don't claim to have invented anything conceptually new here, both <a href="http://lampwww.epfl.ch/~amin/pub/hosc2013.pdf">Scala</a> and <a href="http://www.davidchristiansen.dk/2014/12/03/filling-out-source-locations-in-idris/">Idris</a> support reifying source locations in a much more principled manner than what I've presented. It would also be nice if GHC had similar support, perhaps via the <code>ImplicitParams</code> extension. But I do believe this is a nice solution that you can use today!</p>
-<section class="footnotes">
+<p>You may have noticed that the only pieces of the plugin that were actually specific to <code>Imp</code> were finding interesting expressions and annotating them with source locations. So I’ve extracted the rest into a generic <a href="http://hackage.haskell.org/package/ghc-srcspan-plugin">pass</a> that you can re-use. In fact we’re already using this plugin in the <a href="https://github.com/GaloisInc/ivory/blob/master/ivory/src/Ivory/Language/Plugin.hs">Ivory</a> language for writing safe embedded systems.</p>
+<p>As a final note, I don’t claim to have invented anything conceptually new here, both <a href="http://lampwww.epfl.ch/~amin/pub/hosc2013.pdf">Scala</a> and <a href="http://www.davidchristiansen.dk/2014/12/03/filling-out-source-locations-in-idris/">Idris</a> support reifying source locations in a much more principled manner than what I’ve presented. It would also be nice if GHC had similar support, perhaps via the <code>ImplicitParams</code> extension. But I do believe this is a nice solution that you can use today!</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr />
 <ol>
-<li id="fn1"><p>The actual definition has two extra constructors and a type parameter which I've instantiated with <code>Id</code>, but this is not particularly relevant to our use-case.<a href="#fnref1">↩</a></p></li>
+<li id="fn1"><p>The actual definition has two extra constructors and a type parameter which I’ve instantiated with <code>Id</code>, but this is not particularly relevant to our use-case.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section></article></section><footer class="footer"><p>Copyright &copy; Eric Seidel, 2012</p></footer></div></body></html>

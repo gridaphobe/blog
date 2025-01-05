@@ -39,7 +39,7 @@ nav ul li a
 footer
 {
   margin-top : 5px;
-  border-top : solid 1px #e5e5e5;
+  border-top : 1px solid #e5e5e5;
 }
 
 footer p
@@ -51,7 +51,7 @@ footer p
 section h1
 {
   margin-bottom : 15px;
-  border-bottom : solid 1px #e5e5e5;
+  border-bottom : 1px solid #e5e5e5;
 }
 
 .pull-right

@@ -8,16 +8,13 @@ module Post
   , sorted
   ) where
 
-import           Control.Applicative
 import           Control.Monad
 import           Data.List
 import           Data.Map                     (Map)
 import qualified Data.Map                     as M
-import qualified Data.Set                     as S
 import           Data.Text                    (Text)
 import qualified Data.Text                    as T
 import qualified Data.Text.Encoding           as T
-import qualified Data.Text.IO                 as T
 import           Data.Time.Clock              (UTCTime)
 import           Data.Time.Format
 import           System.Directory
@@ -62,11 +59,11 @@ loadPost path = runIOorExplode $ do
     mkd <- readFileStrict path
     p@(Pandoc m _) <- readMarkdown readerOptions (T.decodeUtf8 mkd)
     content <- writeHtml5 writerOptions p
-    return Post { title   = T.pack $ stringify $ docTitle m
+    return Post { title   = stringify $ docTitle m
                 , slug    = T.pack $ takeBaseName path
                 , content = content
-                , authors = map (T.pack . stringify) $ docAuthors m
-                , date    = readTime defaultTimeLocale fmt $ stringify $ docDate m
+                , authors = map stringify $ docAuthors m
+                , date    = parseTimeOrError True defaultTimeLocale fmt . T.unpack . stringify $ docDate m
                 , format  = f
                 }
   where

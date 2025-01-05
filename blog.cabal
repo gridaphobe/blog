@@ -13,6 +13,9 @@ Cabal-version:       >=1.10
 Executable blog
   hs-source-dirs: src
   main-is: Main.hs
+  other-modules: Feed Post View
+
+  ghc-options: -Wunused-imports -Wunused-packages
 
   Build-depends:
     base >= 4 && < 5,
@@ -22,15 +25,8 @@ Executable blog
     clay,
     directory,
     filepath,
-    hakyll >= 4.13.0.0,
-    mtl,
+    hakyll,
     pandoc,
-    pandoc-types,
-    scotty,
     skylighting,
     text,
-    time,
-    transformers,
-    unix,
-    wai-extra,
-    wai-middleware-static
+    time

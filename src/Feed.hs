@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Feed (feed) where
 
-import           Data.Monoid
 import           Data.Time.Format
 import           Text.Blaze
 import           Text.Blaze.Html5 (Html, toHtml)
