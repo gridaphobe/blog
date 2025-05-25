@@ -73,8 +73,7 @@ jobs:
           # Update stack.yaml
           # The s|^snapshot:.*|... replaces the line starting with 'snapshot:'
           # with 'snapshot:' followed by a newline and then '  url: <URL>'.
-          # The four backslashes \\n become \n for the shell, which then becomes 
- for sed.
+          # The four backslashes \\n become \n for the shell, which then becomes a newline for sed.
           sed -i "s|^snapshot:.*|snapshot:\\n  url: ${{ steps.latest_lts.outputs.lts_url }}|" stack.yaml
           cat stack.yaml # Print updated file for logs
         else
