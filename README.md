@@ -46,10 +46,10 @@ This project uses GitHub Actions for Continuous Integration and automated deploy
     4.  Generates the blog content (`stack run blog -- rebuild`) into the `docs/` directory.
     5.  Uploads the content of the `docs/` directory as a GitHub Pages artifact.
 *   **Deploy Job:**
-    1.  Runs after the build job successfully completes.
+        1.  Runs only on pushes to the `master` branch, after the `build` job successfully completes. It is skipped for pull request builds.
     2.  Downloads the Pages artifact.
     3.  Deploys the artifact to GitHub Pages.
-*   **Purpose:** This ensures that changes integrate correctly, the blog can always be built, and successful builds on the `master` branch are automatically deployed to GitHub Pages. It also validates automated dependency update pull requests.
+*   **Purpose:** The workflow ensures that changes integrate correctly and the blog is always buildable (via PR checks). For pushes to the `master` branch, it additionally ensures that successful builds are automatically deployed to GitHub Pages.
 
 ## Automated Dependency Updates
 
