@@ -12,5 +12,6 @@
 			"globalPackages": "",
 			"globalLibraries": ""
 		}
-	}
+	},
+	"postCreateCommand": "stack build --only-dependencies"
 }

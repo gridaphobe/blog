@@ -1,0 +1,113 @@
+# .github/workflows/update-lts.yml
+name: Update Stackage LTS
+
+on:
+  schedule:
+    # Run weekly on Monday at 00:00 UTC
+    - cron: '0 0 * * 1'
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  update-lts:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == '<YOUR_GITHUB_USERNAME_OR_ORG>' # IMPORTANT: Replace with your GitHub username/org to prevent running on forks
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        # Need to fetch all history to properly compare branches for PR creation
+        fetch-depth: 0 
+
+    - name: Set up Haskell and Stack
+      uses: haskell-actions/setup@v2
+      with:
+        ghc-version: 'recommended'
+        stack-version: 'recommended'
+
+    - name: Get current LTS from stack.yaml
+      id: current_lts
+      run: |
+        CURRENT_LTS_URL=$(grep 'snapshot:' stack.yaml | head -n1 | awk '{print $NF}')
+        CURRENT_LTS_DIR=$(basename $(dirname $CURRENT_LTS_URL))
+        CURRENT_LTS_NUM=$(echo $CURRENT_LTS_DIR | sed 's/lts-//')
+        echo "Current LTS directory: $CURRENT_LTS_DIR"
+        echo "Current LTS number: $CURRENT_LTS_NUM"
+        echo "lts_url=$CURRENT_LTS_URL" >> $GITHUB_OUTPUT
+        echo "lts_dir=$CURRENT_LTS_DIR" >> $GITHUB_OUTPUT
+        echo "lts_num=$CURRENT_LTS_NUM" >> $GITHUB_OUTPUT
+
+    - name: Fetch latest LTS version from Stackage
+      id: latest_lts
+      run: |
+        # Fetch the list of LTS snapshots, get the directories, sort numerically, get the last one
+        # This assumes LTS versions are lts-X.Y where X is the major version
+        LATEST_LTS_MAJOR=$(curl -s https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/ | grep -oE 'href="[0-9]+/"' | sed -E 's/href="([0-9]+)\/"//' | sort -nr | head -n1)
+        LATEST_LTS_FULL_DIR=$(curl -s "https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/${LATEST_LTS_MAJOR}/" | grep -oE 'href="[0-9]+\.[0-9]+\.yaml"' | sed -E 's/href="([0-9]+\.[0-9]+)\.yaml"//' | sort -V | tail -n1)
+        LATEST_LTS_DIR="lts-${LATEST_LTS_MAJOR}" # This is a simplification, actual dir might be just major number
+        LATEST_LTS_SNAPSHOT_FILE="${LATEST_LTS_FULL_DIR}.yaml"
+        LATEST_LTS_SNAPSHOT_URL="https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/${LATEST_LTS_MAJOR}/${LATEST_LTS_SNAPSHOT_FILE}"
+        
+        echo "Latest LTS major directory: $LATEST_LTS_MAJOR"
+        echo "Latest LTS snapshot file: $LATEST_LTS_SNAPSHOT_FILE"
+        echo "Latest LTS URL: $LATEST_LTS_SNAPSHOT_URL"
+        
+        # We need the equivalent of 'lts-X.Y' for comparison if current is 'lts-A.B'
+        # The URL structure is .../lts/MAJOR/MINOR.yaml
+        # So the 'lts_num' for latest should be MAJOR.MINOR
+        LATEST_LTS_NUM_FOR_COMPARISON="${LATEST_LTS_FULL_DIR}"
+
+        echo "lts_url=$LATEST_LTS_SNAPSHOT_URL" >> $GITHUB_OUTPUT
+        echo "lts_num=$LATEST_LTS_NUM_FOR_COMPARISON" >> $GITHUB_OUTPUT
+
+    - name: Compare versions and update if newer
+      id: update_check
+      run: |
+        echo "Current LTS: ${{ steps.current_lts.outputs.lts_num }}"
+        echo "Latest LTS: ${{ steps.latest_lts.outputs.lts_num }}"
+        # Use sort -V for version comparison
+        LATEST_IS_NEWER=$(echo -e "${{ steps.current_lts.outputs.lts_num }}\n${{ steps.latest_lts.outputs.lts_num }}" | sort -V | tail -n1)
+        if [[ "${LATEST_IS_NEWER}" == "${{ steps.latest_lts.outputs.lts_num }}" && "${{ steps.current_lts.outputs.lts_num }}" != "${{ steps.latest_lts.outputs.lts_num }}" ]]; then
+          echo "Newer LTS available: ${{ steps.latest_lts.outputs.lts_num }}"
+          echo "update_needed=true" >> $GITHUB_OUTPUT
+          # Update stack.yaml
+          sed -i "s|snapshot: .*|snapshot:
+  url: ${{ steps.latest_lts.outputs.lts_url }}|" stack.yaml
+          cat stack.yaml # Print updated file for logs
+        else
+          echo "Current LTS is up-to-date or latest is not newer."
+          echo "update_needed=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Install dependencies, build, and generate blog (if update was made)
+      if: steps.update_check.outputs.update_needed == 'true'
+      run: |
+        set -e # Exit immediately if a command exits with a non-zero status.
+        echo "Attempting build with new LTS: ${{ steps.latest_lts.outputs.lts_num }}"
+        rm -rf .stack-work # Clean previous build artifacts
+        stack build --only-dependencies
+        stack build
+        stack run blog -- rebuild
+        echo "Build successful with new LTS."
+
+    - name: Create Pull Request if update was successful
+      if: steps.update_check.outputs.update_needed == 'true'
+      uses: peter-evans/create-pull-request@v6
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "chore: update Stackage LTS to ${{ steps.latest_lts.outputs.lts_num }}"
+        branch: "update-lts-${{ steps.latest_lts.outputs.lts_num }}"
+        delete-branch: true
+        title: "Update Stackage LTS to ${{ steps.latest_lts.outputs.lts_num }}"
+        body: |
+          Automated update of Stackage LTS snapshot from `${{ steps.current_lts.outputs.lts_num }}` to `${{ steps.latest_lts.outputs.lts_num }}`.
+
+          This PR was generated automatically by the `update-lts` workflow.
+          The build was successful with the new LTS. CI checks on this PR will further validate the changes.
+        labels: dependencies, automation
+        # assignees: your-github-username # Optional
+        # reviewers: your-github-username # Optional
+
+    - name: Notify if no update needed
+      if: steps.update_check.outputs.update_needed == 'false'
+      run: echo "No LTS update was needed."
