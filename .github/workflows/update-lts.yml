@@ -94,7 +94,7 @@ jobs:
 
     - name: Create Pull Request if update was successful
       if: steps.update_check.outputs.update_needed == 'true'
-      uses: peter-evans/create-pull-request@v6
+      uses: peter-evans/create-pull-request@v7
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: "chore: update Stackage LTS to ${{ steps.latest_lts.outputs.lts_num }}"
