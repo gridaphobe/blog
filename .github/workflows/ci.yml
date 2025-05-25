@@ -3,14 +3,19 @@ name: CI
 
 on:
   push:
-    branches: [ master ] # Assuming 'master' is your primary branch
+    branches: [ master ]
   pull_request:
-    branches: [ master ] # Assuming 'master' is your primary branch
+    branches: [ master ]
+
+# Add top-level permissions
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -18,8 +23,8 @@ jobs:
     - name: Set up Haskell and Stack
       uses: haskell-actions/setup@v2
       with:
-        ghc-version: 'recommended' # Or pin to a specific version if needed
-        stack-version: 'recommended' # Or pin to a specific version
+        ghc-version: 'recommended'
+        stack-version: 'recommended'
 
     - name: Cache Stack dependencies
       uses: actions/cache@v4
@@ -38,13 +43,26 @@ jobs:
       run: stack build
 
     - name: Generate blog content
-      run: stack run blog -- rebuild # This is the command from the Makefile's 'generate' target
+      run: stack run blog -- rebuild
 
-    # Optional: Add a step here to deploy to GitHub Pages or another hosting service
-    # - name: Deploy to GitHub Pages
-    #   if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    #   uses: peaceiris/actions-gh-pages@v3
-    #   with:
-    #     github_token: ${{ secrets.GITHUB_TOKEN }}
-    #     publish_dir: ./docs 
-    #     # cname: your.custom.domain.com # Uncomment if you have a custom domain
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        # Upload content of the 'docs' directory
+        path: './docs'
+
+  # New deploy job
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    # Grant GITHUB_TOKEN the permissions required to deploy to GitHub Pages
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment # id is needed for the url output
+        uses: actions/deploy-pages@v4
