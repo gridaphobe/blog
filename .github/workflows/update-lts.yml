@@ -42,8 +42,8 @@ jobs:
       run: |
         # Fetch the list of LTS snapshots, get the directories, sort numerically, get the last one
         # This assumes LTS versions are lts-X.Y where X is the major version
-        LATEST_LTS_MAJOR=$(curl -s https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/ | grep -oE 'href="[0-9]+/"' | sed -E 's/href="([0-9]+)\/"//' | sort -nr | head -n1)
-        LATEST_LTS_FULL_DIR=$(curl -s "https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/${LATEST_LTS_MAJOR}/" | grep -oE 'href="[0-9]+\.[0-9]+\.yaml"' | sed -E 's/href="([0-9]+\.[0-9]+)\.yaml"//' | sort -V | tail -n1)
+        LATEST_LTS_MAJOR=$(curl -s https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/ | grep -oE 'href="[0-9]+/"' | sed -E 's/href="([0-9]+)\/"/\1/' | sort -nr | head -n1)
+        LATEST_LTS_FULL_DIR=$(curl -s "https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/${LATEST_LTS_MAJOR}/" | grep -oE 'href="[0-9]+\.[0-9]+\.yaml"' | sed -E 's/href="([0-9]+\.[0-9]+)\.yaml"/\1/' | sort -V | tail -n1)
         LATEST_LTS_DIR="lts-${LATEST_LTS_MAJOR}" # This is a simplification, actual dir might be just major number
         LATEST_LTS_SNAPSHOT_FILE="${LATEST_LTS_FULL_DIR}.yaml"
         LATEST_LTS_SNAPSHOT_URL="https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/${LATEST_LTS_MAJOR}/${LATEST_LTS_SNAPSHOT_FILE}"
@@ -73,7 +73,8 @@ jobs:
           # Update stack.yaml
           # The s|^snapshot:.*|... replaces the line starting with 'snapshot:'
           # with 'snapshot:' followed by a newline and then '  url: <URL>'.
-          # The four backslashes \\n become \n for the shell, which then becomes a newline for sed.
+          # The four backslashes \\n become \n for the shell, which then becomes 
+ for sed.
           sed -i "s|^snapshot:.*|snapshot:\\n  url: ${{ steps.latest_lts.outputs.lts_url }}|" stack.yaml
           cat stack.yaml # Print updated file for logs
         else
