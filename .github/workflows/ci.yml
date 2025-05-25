@@ -3,9 +3,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ] # Assuming 'main' is your primary branch
+    branches: [ master ] # Assuming 'master' is your primary branch
   pull_request:
-    branches: [ main ] # Assuming 'main' is your primary branch
+    branches: [ master ] # Assuming 'master' is your primary branch
 
 jobs:
   build:
@@ -42,7 +42,7 @@ jobs:
 
     # Optional: Add a step here to deploy to GitHub Pages or another hosting service
     # - name: Deploy to GitHub Pages
-    #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    #   if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     #   uses: peaceiris/actions-gh-pages@v3
     #   with:
     #     github_token: ${{ secrets.GITHUB_TOKEN }}

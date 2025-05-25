@@ -10,7 +10,7 @@ on:
 jobs:
   update-lts:
     runs-on: ubuntu-latest
-    if: github.repository_owner == '<YOUR_GITHUB_USERNAME_OR_ORG>' # IMPORTANT: Replace with your GitHub username/org to prevent running on forks
+    if: github.repository_owner == 'gridaphobe' # IMPORTANT: Replace with your GitHub username/org to prevent running on forks
 
     steps:
     - name: Checkout code
