@@ -14,8 +14,8 @@ import qualified Post as P
 feed :: [Post] -> Html
 feed ps = feed_ ! customAttribute "xmlns" "http://www.w3.org/2005/Atom" $ do
     title_ "Eric Seidel"
-    link_ ! rel "self" ! href "http://eseidel.org/feed"
-    link_ ! href "http://eseidel.org/"
+    link_ ! rel "self" ! href "https://eric.seidel.io/feed"
+    link_ ! href "https://eric.seidel.io/"
     updated_ $ toHtml $ formatTime defaultTimeLocale "%FT%XZ" $ P.date $ head ps
     id_ "tag:gridaphobe.blog,2012:"
     author_ $ do
@@ -27,7 +27,7 @@ feed ps = feed_ ! customAttribute "xmlns" "http://www.w3.org/2005/Atom" $ do
 entry :: Post -> Html
 entry p = entry_ $ do
     title_ $ toHtml $ P.title p
-    link_ ! href ("http://eseidel.org/posts/" `mappend` toValue (P.slug p))
+    link_ ! href ("https://eric.seidel.io/posts/" `mappend` toValue (P.slug p))
     published_ $ toHtml $ formatTime defaultTimeLocale "%FT%XZ" $ P.date p
     updated_ $ toHtml $ formatTime defaultTimeLocale "%FT%XZ" $ P.date p
     id_ $ toHtml $ "tag:gridaphobe.blog,2012:" `mappend` P.slug p
