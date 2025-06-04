@@ -54,7 +54,7 @@ jobs:
   # New deploy job
   deploy:
     needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master' # This is the new line
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
