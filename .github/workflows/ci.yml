@@ -46,7 +46,7 @@ jobs:
       run: stack run blog -- rebuild
 
     - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
+      uses: actions/upload-pages-artifact@v4
       with:
         # Upload content of the 'docs' directory
         path: './docs'
