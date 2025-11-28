@@ -25,7 +25,7 @@ index :: [Post] -> L.Text
 index ps =
     layout "Eric Seidel" $ do
         H.img ! A.class_ "pull-right" ! A.title "Eric Seidel"
-              ! A.src "/img/eric.jpg"
+              ! A.src "/img/eric.png"
         H.h1 "Eric Seidel"
         H.p $ do
             "I work on Domain-Specific Languages for Economic Modeling at Bridgewater Associates. "
@@ -224,8 +224,9 @@ style = C.render $ do
     "section h1" C.? do
         C.marginBottom (C.px 15)
         C.borderBottom (C.px 1) C.solid "#E5E5E5"
-    ".pull-right" C.?
+    ".pull-right" C.? do
         C.paddingLeft (C.px 20)
+        C.maxWidth (C.px 200)
     "ul.pubs" C.? C.listStyleType C.none
     "ul.pubs > li" C.?
         C.marginBottom (C.em 0.5)
