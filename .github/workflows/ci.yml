@@ -23,10 +23,11 @@ jobs:
     - name: Set up Haskell and Stack
       uses: haskell-actions/setup@v2
       with:
-        ghc-version: 'recommended'
-        stack-version: 'recommended'
+        enable-stack: true
+        stack-no-global: true
+        stack-version: 'latest'
 
-    - name: Cache Stack dependencies
+    - name: Cache Stack dependencies and build artifacts
       uses: actions/cache@v4
       with:
         path: |
@@ -34,6 +35,7 @@ jobs:
           .stack-work
         key: ${{ runner.os }}-stack-${{ hashFiles('stack.yaml') }}-${{ hashFiles('blog.cabal') }}
         restore-keys: |
+          ${{ runner.os }}-stack-${{ hashFiles('stack.yaml') }}-
           ${{ runner.os }}-stack-
 
     - name: Install dependencies
