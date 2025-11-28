@@ -14,7 +14,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         # Need to fetch all history to properly compare branches for PR creation
         fetch-depth: 0 
