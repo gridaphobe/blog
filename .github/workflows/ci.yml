@@ -25,7 +25,6 @@ jobs:
       with:
         enable-stack: true
         stack-no-global: true
-        stack-setup-ghc: true
         stack-version: 'latest'
 
     - name: Cache Stack dependencies and build artifacts
