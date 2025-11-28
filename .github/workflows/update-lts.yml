@@ -62,13 +62,13 @@ jobs:
           echo "update_needed=false" >> $GITHUB_OUTPUT
         fi
 
-    - name: Create Pull Request if update was successful
+    - name: Create or Update Pull Request
       if: steps.update_check.outputs.update_needed == 'true'
       uses: peter-evans/create-pull-request@v7
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: "chore: update Stackage LTS to ${{ steps.latest_lts.outputs.lts_num }}"
-        branch: "update-lts-${{ steps.latest_lts.outputs.lts_num }}"
+        branch: "automated-stackage-updates"
         delete-branch: true
         title: "Update Stackage LTS to ${{ steps.latest_lts.outputs.lts_num }}"
         body: |
@@ -76,6 +76,8 @@ jobs:
 
           This PR was generated automatically by the `update-lts` workflow.
           The build was successful with the new LTS. CI checks on this PR will further validate the changes.
+
+          **Note:** This PR will be automatically updated when newer LTS versions are available.
         labels: dependencies, automation
         # assignees: your-github-username # Optional
         # reviewers: your-github-username # Optional
