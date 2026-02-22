@@ -11,128 +11,66 @@ cv:
 
   sections:
     Summary:
-      - "Software Engineer and Architect with extensive experience in building scalable, efficient systems and designing cutting-edge domain-specific languages. Specializes in functional programming, programming languages, and distributed systems, with a proven ability to translate complex technical requirements into impactful solutions."
+      - "Architect and software engineer specializing in domain-specific languages, programming languages, and distributed systems. Built and evolved production Scala and Haskell platforms used by hundreds across engineering and investment teams, improving feedback loops, runtime performance, and cross-functional delivery."
 
     Experience:
       - company: Bridgewater Associates
-        position: Lead Architect -- Domain-Specific Languages
+        position: Architect, Domain-Specific Languages
         start_date: 2021
         end_date: present
         highlights:
-          - "Led the continued evolution of a Scala-based DSL for economic modeling and investment logic."
-          - "Introduced AI tooling for model authors, making code assistants effective with our DSL."
-          - "Drove the platform's move from IntelliJ to VS Code with interactive DSL execution, shortening iteration cycles."
-          - "Set architectural direction and alignment across business, product, and engineering."
+          - "Led evolution of a Scala DSL, shipping feature, performance, and tooling upgrades that accelerated authoring speed and improved runtime performance."
+          - "Enabled AI-assisted development for DSL users by delivering context documentation and tooling tailored to common DSL authoring workflows."
+          - "Drove migration of all DSL users from IntelliJ to VS Code, adding interactive execution and IDE integration that cut iteration time from minutes to seconds."
+          - "Led greenfield design of a replacement DSL and production-grade compiler, and advocated a no-go decision based on delivery risk and cost-benefit analysis."
+          - "Owned technical direction for a DSL platform used by hundreds of users, aligning roadmap and architecture priorities across business, product, and engineering."
 
       - company: Bloomberg
         position: Senior Software Engineer
         start_date: 2017
         end_date: 2021
         highlights:
-          - "Member of the Engineering Champs organization, helping to guide the technical direction of the company."
-          - "Defined org-wide conventions for Kafka usage in simple, opinionated libraries, avoiding common pitfalls."
+          - "Selected to Bloomberg's Engineering Champs, a small senior cohort shaping company-wide engineering standards and architecture direction."
+          - "Built the default Kafka library for Bloomberg C++ services, codifying org-wide conventions with safe defaults, clear delivery semantics, and built-in monitoring to reduce common integration pitfalls."
           # - "Designed and implemented low-latency caching service of feature enablement flags with real-time updates over Apache Kafka."
-          - "Extended Fortran parser for non-standard features, enabling an automated refactoring team."
-          - "Designed and maintained libraries and infrastructure for writing Haskell at Bloomberg."
+          - "Extended a Haskell-based Fortran parser to support vendor-specific language features, enabling automated migration of a large codebase from big-iron systems to Linux."
+          - "Developed and maintained Haskell libraries for Bloomberg's in-house RPC framework and database platforms."
+
+    Technologies:
+      - label: Languages
+        details: "Scala, Haskell, Rust, Python, C++"
+      - label: Platforms
+        details: "Apache Kafka, Apache Spark, gRPC, PostgreSQL"
+      - label: Domains
+        details: "DSL design, distributed systems, type systems, developer tooling, AI-assisted development"
+
+    Open Source & Service:
+      - bullet: "Member, GHC Steering Committee (2018--2025)."
+      - bullet: "Program Committee, Haskell Symposium (2019)."
+      - bullet: "Contributed HasCallStack, a lightweight call-stack mechanism, to GHC."
+      # - bullet: "Contributed to macOS support in the Nix package manager and distribution."
 
     Education:
       - institution: UC San Diego
         area: Computer Science (Programming Languages)
         degree: PhD
-        # start_date: 2013
         end_date: 2017
         highlights:
-          - "Dissertation: Data-Driven Techniques for Type Error Diagnosis."
+          - "PhD dissertation: Data-Driven Techniques for Type Error Diagnosis."
+          - "Published peer-reviewed work on refinement types and type error diagnosis in JFP, OOPSLA, and ICFP."
         #   - "Applied machine-learning techniques to improve type-error localization for Hindley-Milner type systems (Seidel, Sibghat, Chaudhuri, Weimer, and Jhala 2017)."
         #   - "Synthesized counter-examples to type errors using symbolic execution (Seidel, Jhala, and Weimer 2016)."
         #   - "Translated refinement types into efficient, exhaustive test suites (Seidel, Vazou, and Jhala 2015)."
         #   - "Verified memory safety and functional correctness of Data.Text library, discovering and fixing a memory safety error in the process (Vazou, Seidel, and Jhala 2014)."
 
-      # - institution: The City College of New York
-      #   area: Computer Science
-      #   degree: BS
-      #   start_date: 2009
-      #   end_date: 2012
-      #   highlights:
-      #     - "Graduated Magna Cum Laude."
-      #     - "Received Engineering Achievement Medal (top of graduating class)."
-
-    Open Source & Service:
-      - bullet: "Member, GHC Steering Committee (2018--2025)."
-      - bullet: "Program Committee, Haskell Symposium 2019."
-      - bullet: "Contributed HasCallStack (lightweight call-stack mechanism) to GHC."
-      # - bullet: "Contributed to macOS support in the Nix package manager and distribution."
-
-    Selected Publications:
-      - title: "Dynamic Witnesses for Static Type Errors (or, Ill-Typed Programs Usually Go Wrong)"
-        authors: ["E. L. Seidel", "R. Jhala", "W. Weimer"]
-        journal: "Journal of Functional Programming"
-        date: 2018
-
-      # - title: "Data-Driven Techniques for Type Error Diagnosis"
-      #   authors: ["E. L. Seidel"]
-      #   journal: "PhD thesis. UC San Diego"
-      #   date: 2017
-
-      - title: "Learning to Blame: Localizing Novice Type Errors with Data-driven Diagnosis"
-        authors:
-          [
-            "E. L. Seidel",
-            "H. Sibghat",
-            "K. Chaudhuri",
-            "W. Weimer",
-            "R. Jhala",
-          ]
-        journal: "OOPSLA 2017"
-        date: 2017
-
-      # - title: "Dynamic Witnesses for Static Type Errors (or, Ill-Typed Programs Usually Go Wrong)"
-      #   authors: ["E. L. Seidel", "R. Jhala", "W. Weimer"]
-      #   journal: "Proceedings of the 21st ACM SIGPLAN International Conference on Functional Programming"
-      #   date: 2016
-
-      # - title: "Guilt Free Ivory"
-      #   authors:
-      #     [
-      #       "T. Elliott",
-      #       "L. Pike",
-      #       "S. Winwood",
-      #       "P. Hickey",
-      #       "J. Bielman",
-      #       "J. Sharp",
-      #       "E. L. Seidel",
-      #       "J. Launchbury",
-      #     ]
-      #   journal: "Proceedings of the 8th ACM SIGPLAN Symposium on Haskell"
-      #   date: 2015
-
-      # - title: "Type Targeted Testing"
-      #   authors: ["E. L. Seidel", "N. Vazou", "R. Jhala"]
-      #   journal: "Programming Languages and Systems"
-      #   date: 2015
-
-      # - title: "Liquidhaskell: Experience with Refinement Types in the Real World"
-      #   authors: ["N. Vazou", "E. L. Seidel", "R. Jhala"]
-      #   journal: "Proceedings of the 2014 ACM SIGPLAN symposium on Haskell"
-      #   date: 2014
-
-      - title: "Refinement Types for Haskell"
-        authors:
-          [
-            "N. Vazou",
-            "E. L. Seidel",
-            "R. Jhala",
-            "D. Vytiniotis",
-            "S. Peyton-Jones",
-          ]
-        journal: "ICFP 2014"
-        date: 2014
-
-    Technologies:
-      - label: Languages
-        details: "Haskell, Scala, Rust, Python, C++"
-      - label: Domains
-        details: "Domain-Specific Languages, Functional Programming, Type Systems, Distributed Systems"
+      - institution: The City College of New York
+        area: Computer Science
+        degree: BS
+        # start_date: 2009
+        end_date: 2012
+        highlights:
+          - "Graduated magna cum laude."
+          - "Awarded the Engineering Achievement Medal (top of graduating class)."
 
 design:
   theme: engineeringresumes
